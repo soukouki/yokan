@@ -5,13 +5,15 @@ import (
 	"yokan/token"
 )
 
-func TestNextToken(t *testing.T) {
+type TypeAndLiteral struct {
+	Type token.TokenType
+	Literal string
+}
+
+func TestOneCharacters(t *testing.T) {
 	input := `=+-*/,(){}<>`
 
-	tests := []struct {
-		expectedType token.TokenType
-		expectedLiteral string
-	} {
+	expected := []TypeAndLiteral {
 		{token.ASSIGN, "="},
 		{token.PLUS, "+"},
 		{token.MINUS, "-"},
@@ -27,17 +29,42 @@ func TestNextToken(t *testing.T) {
 		{token.EOF, "EOF"},
 	}
 
+	_TestTokens(t, input, expected)
+}
+
+func TestSpaces(t *testing.T) {
+	input := " \t \n "
+	expected := []TypeAndLiteral {
+		{token.NEWLINE, "\n"},
+		{token.EOF, "EOF"},
+	}
+	_TestTokens(t, input, expected)
+}
+
+func TestComment(t *testing.T) {
+	input := "+//aaa\n-"
+	expected := []TypeAndLiteral {
+		{token.PLUS, "+"},
+		{token.NEWLINE, "\n"},
+		{token.MINUS, "-"},
+		{token.EOF, "EOF"},
+	}
+	_TestTokens(t, input, expected)
+}
+
+func _TestTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 
-	for i, tt := range tests {
-		tok := l.NextToken()
-		if tok.Type != tt.expectedType {
+	for i, expected := range expected {
+		tok := l.nextToken()
+		if tok.Type != expected.Type {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
-				i, tt.expectedType, tok.Type)
+				i, expected.Type, tok.Type)
 		}
-		if tok.Literal != tt.expectedLiteral {
+		if tok.Literal != expected.Literal {
 			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
-				i, tt.expectedLiteral, tok.Literal)
+				i, expected.Literal, tok.Literal)
 		}
 	}
 }
+

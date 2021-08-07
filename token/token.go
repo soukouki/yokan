@@ -31,11 +31,12 @@ const (
 
 
 	// デミリタ
-	COMMA  = ","
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
+	NEWLINE = "\n"
+	COMMA   = ","
+	LPAREN  = "("
+	RPAREN  = ")"
+	LBRACE  = "{"
+	RBRACE  = "}"
 
 	// キーワード
 	FUNC   = "FUNCTION"

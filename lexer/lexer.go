@@ -1,6 +1,9 @@
 package lexer
 
-import "yokan/token"
+import (
+	"yokan/token"
+	"fmt"
+)
 
 type Lexer struct {
 	input string
@@ -25,8 +28,37 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
-func (l *Lexer) NextToken() token.Token {
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
+	}
+}
+
+func (l *Lexer) skipWhiteSpaces() {
+	for l.ch==' ' || l.ch=='\t' || l.ch=='\r' {
+		l.readChar()
+	}
+}
+
+func (l *Lexer) skipNewlines() {
+	for l.ch=='\n' {
+		l.readChar()
+	}
+}
+
+func (l *Lexer) skipLines() {
+	for l.ch!='\n' {
+		fmt.Print(l.input[l.position:]+"\n")
+		l.readChar()
+	}
+}
+
+func (l *Lexer) nextToken() token.Token {
 	var tok token.Token
+
+	l.skipWhiteSpaces()
 
 	switch l.ch {
 	case '=':
@@ -38,11 +70,19 @@ func (l *Lexer) NextToken() token.Token {
 	case '*':
 		tok = newToken(token.STAR, l.ch)
 	case '/':
-		tok = newToken(token.SLASH, l.ch)
+		if l.peekChar() == '/' {
+			l.skipLines()
+			tok = newToken(token.NEWLINE, '\n')
+		} else {
+			tok = newToken(token.SLASH, l.ch)
+		}
 	case '<':
 		tok = newToken(token.LT, l.ch)
 	case '>':
 		tok = newToken(token.GT, l.ch)
+	case '\n':
+		tok = newToken(token.NEWLINE, l.ch)
+		l.skipNewlines()
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
 	case '(':
@@ -56,6 +96,8 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok.Literal = "EOF"
 		tok.Type = token.EOF
+	default:
+		tok = newToken(token.ILLEGAL, l.ch)
 	}
 
 	l.readChar()
