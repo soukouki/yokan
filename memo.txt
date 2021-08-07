@@ -1,0 +1,22 @@
+
+a = 123 + 456 // コメント
+
+a = a+789
+
+str = "abab\n" // 特殊文字はとりあえず改行だけ
+
+array = [1, 2, 3, 4]
+
+func add(x, y) {
+  x + y
+}
+
+i = 0
+while(i<4) {
+  val = array[i]
+  if(val <= 2) {
+    print(val)
+  } else {
+    print(val*10)
+  }
+}
