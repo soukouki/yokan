@@ -92,18 +92,15 @@ func (l *Lexer) nextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '"':
+		return token.Token{Type: token.STRING, Literal: l.readStringLiteral()}
 	case 0:
-		tok.Type = token.EOF
-		tok.Literal = "EOF"
+		tok = token.Token{Type: token.EOF, Literal: "EOF"}
 	default:
 		if isDigit(l.ch) {
-			tok.Type = token.INT
-			tok.Literal = l.readDigits()
-			return tok
+			return token.Token{Type: token.INT, Literal: l.readDigits()}
 		} else if isLetter(l.ch) {
-			tok.Type = token.IDENT
-			tok.Literal = l.readIdentifier()
-			return tok
+			return token.Token{Type: token.IDENT, Literal: l.readIdentifier()}
 		}
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
@@ -138,6 +135,35 @@ func (l *Lexer) readIdentifier() string {
 		l.readChar()
 	}
 	return l.input[pos:l.position]
+}
+
+func (l *Lexer) readStringLiteral() string {
+	literal := ""
+	l.readChar() // "を飛ばす
+	for {
+		switch l.ch {
+		case '"':
+			l.readChar()
+			return literal
+		case '\\':
+			switch l.peekChar() {
+			case 'n':
+				literal += "\n"
+			case 't':
+				literal += "\t"
+			case '\\':
+				literal += "\\"
+			case '"':
+				literal += "\""
+			default:
+				// 無視する
+			}
+			l.readChar()
+		default:
+			literal += string(l.ch)
+		}
+		l.readChar()
+	}
 }
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {

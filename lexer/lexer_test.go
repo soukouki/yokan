@@ -80,7 +80,7 @@ func TestInteger(t *testing.T) {
 
 func TestIdentifier(t *testing.T) {
 	input := "a+bbb*CcC ddddd _eE_123e"
-	expected := []TypeAndLiteral{
+	expected := []TypeAndLiteral {
 		{token.IDENT, "a"},
 		{token.PLUS, "+"},
 		{token.IDENT, "bbb"},
@@ -88,6 +88,19 @@ func TestIdentifier(t *testing.T) {
 		{token.IDENT, "CcC"},
 		{token.IDENT, "ddddd"},
 		{token.IDENT, "_eE_123e"},
+		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
+func TestString(t *testing.T) {
+	input := "\"abc\" \"\" \"\\\"\" \"\\n\\t\" \"\n\""
+	expected := []TypeAndLiteral {
+		{token.STRING, "abc"},
+		{token.STRING, ""},
+		{token.STRING, "\""},
+		{token.STRING, "\n\t"},
+		{token.STRING, "\n"},
 		{token.EOF, "EOF"},
 	}
 	testTokens(t, input, expected)

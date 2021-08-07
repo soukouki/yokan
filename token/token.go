@@ -12,8 +12,9 @@ const (
 	EOF     = "EOF"
 
 	// 識別子 リテラル
-	IDENT = "IDENT" // add, foobar, x, ...
-	INT   = "INT"
+	IDENT  = "IDENT" // add, foobar, x, ...
+	INT    = "INT"
+	STRING = "STRING"
 
 	// 演算子
 	ASSIGN = "="
