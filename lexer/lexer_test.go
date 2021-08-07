@@ -78,6 +78,21 @@ func TestInteger(t *testing.T) {
 	testTokens(t, input, expected)
 }
 
+func TestIdentifier(t *testing.T) {
+	input := "a+bbb*CcC ddddd _eE_123e"
+	expected := []TypeAndLiteral{
+		{token.IDENT, "a"},
+		{token.PLUS, "+"},
+		{token.IDENT, "bbb"},
+		{token.STAR, "*"},
+		{token.IDENT, "CcC"},
+		{token.IDENT, "ddddd"},
+		{token.IDENT, "_eE_123e"},
+		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
 func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 

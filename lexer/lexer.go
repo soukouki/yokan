@@ -58,7 +58,7 @@ func (l *Lexer) nextToken() token.Token {
 	var tok token.Token
 
 	l.skipWhiteSpaces()
-
+	
 	switch l.ch {
 	case '=':
 		tok = newToken(token.ASSIGN, l.ch)
@@ -100,6 +100,10 @@ func (l *Lexer) nextToken() token.Token {
 			tok.Type = token.INT
 			tok.Literal = l.readDigits()
 			return tok
+		} else if isLetter(l.ch) {
+			tok.Type = token.IDENT
+			tok.Literal = l.readIdentifier()
+			return tok
 		}
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
@@ -109,12 +113,28 @@ func (l *Lexer) nextToken() token.Token {
 }
 
 func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
+	return include('0', '9', ch)
+}
+
+func isLetter(ch byte) bool {
+	return include('a', 'z', ch) || include('A', 'Z', ch) || ch == '_'
+}
+
+func include(start byte, end byte, ch byte) bool {
+	return start <= ch && ch <= end
 }
 
 func (l *Lexer) readDigits() string {
 	pos := l.position
 	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[pos:l.position]
+}
+
+func (l *Lexer) readIdentifier() string {
+	pos := l.position
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[pos:l.position]
