@@ -106,6 +106,19 @@ func TestString(t *testing.T) {
 	testTokens(t, input, expected)
 }
 
+func TestKeyWords(t *testing.T) {
+	input := "func return while if else"
+	expected := []TypeAndLiteral {
+		{token.FUNC, "func"},
+		{token.RETURN, "return"},
+		{token.WHILE, "while"},
+		{token.IF, "if"},
+		{token.ELSE, "else"},
+		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
 func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 

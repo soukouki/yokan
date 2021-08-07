@@ -46,3 +46,11 @@ const (
 	IF     = "IF"
 	ELSE   = "ELSE"
 )
+
+var Keywords = map[string]TokenType {
+	"func"  : FUNC,
+	"return": RETURN,
+	"while" : WHILE,
+	"if"    : IF,
+	"else"  : ELSE,
+}
