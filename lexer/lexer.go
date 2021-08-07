@@ -101,6 +101,10 @@ func (l *Lexer) nextToken() token.Token {
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}
+	case '[':
+		tok = newToken(token.LBRACK, l.ch)
+	case ']':
+		tok = newToken(token.RBRACK, l.ch)
 	case '\n':
 		tok = newToken(token.NEWLINE, l.ch)
 		l.skipNewlines()

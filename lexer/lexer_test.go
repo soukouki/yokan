@@ -11,7 +11,7 @@ type TypeAndLiteral struct {
 }
 
 func TestOneCharacterKeywords(t *testing.T) {
-	input := `=+-*/,(){}<>`
+	input := `=+-*/,(){}<>[]`
 
 	expected := []TypeAndLiteral {
 		{token.ASSIGN, "="},
@@ -26,6 +26,8 @@ func TestOneCharacterKeywords(t *testing.T) {
 		{token.RBRACE, "}"},
 		{token.LT, "<"},
 		{token.GT, ">"},
+		{token.LBRACK, "["},
+		{token.RBRACK, "]"},
 		{token.EOF, "EOF"},
 	}
 	testTokens(t, input, expected)
@@ -126,6 +128,118 @@ func TestKeyWords(t *testing.T) {
 		{token.IF, "if"},
 		{token.ELSE, "else"},
 		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
+func TestComplexSource(t *testing.T) {
+	input := `
+		a = 123 + 456 // コメント
+		a = a+789
+		str = "abab\n" // 特殊文字はとりあえず改行だけ
+		array = [1, 2]
+
+		func add(x, y) {
+		  x + y
+		}
+
+		i = 0
+		while(i<4) {
+		  val = array[i]
+		  if(val <= 2) {
+		    print(val)
+		  } else {
+		    print(val*10)
+		  }
+		}
+	`
+	expected := []TypeAndLiteral {
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.INT, "123"},
+		{token.PLUS, "+"},
+		{token.INT, "456"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "a"},
+		{token.PLUS, "+"},
+		{token.INT, "789"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "str"},
+		{token.ASSIGN, "="},
+		{token.STRING, "abab\n"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "array"},
+		{token.ASSIGN, "="},
+		{token.LBRACK, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RBRACK, "]"},
+		{token.NEWLINE, "\n"},
+		{token.FUNC, "func"},
+		{token.IDENT, "add"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.NEWLINE, "\n"},
+		{token.RBRACE, "}"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "i"},
+		{token.ASSIGN, "="},
+		{token.INT, "0"},
+		{token.NEWLINE, "\n"},
+		{token.WHILE, "while"},
+		{token.LPAREN, "("},
+		{token.IDENT, "i"},
+		{token.LT, "<"},
+		{token.INT, "4"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "val"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "array"},
+		{token.LBRACK, "["},
+		{token.IDENT, "i"},
+		{token.RBRACK, "]"},
+		{token.NEWLINE, "\n"},
+		{token.IF, "if"},
+		{token.LPAREN, "("},
+		{token.IDENT, "val"},
+		{token.LTEQ, "<="},
+		{token.INT, "2"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "print"},
+		{token.LPAREN, "("},
+		{token.IDENT, "val"},
+		{token.RPAREN, ")"},
+		{token.NEWLINE, "\n"},
+		{token.RBRACE, "}"},
+		{token.ELSE, "else"},
+		{token.LBRACE, "{"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "print"},
+		{token.LPAREN, "("},
+		{token.IDENT, "val"},
+		{token.STAR, "*"},
+		{token.INT, "10"},
+		{token.RPAREN, ")"},
+		{token.NEWLINE, "\n"},
+		{token.RBRACE, "}"},
+		{token.NEWLINE, "\n"},
+		{token.RBRACE, "}"},
 	}
 	testTokens(t, input, expected)
 }
