@@ -64,6 +64,20 @@ func TestContiguousComments(t *testing.T) {
 	testTokens(t, input, expected)
 }
 
+func TestInteger(t *testing.T) {
+	input := "1+234*567 89"
+	expected := []TypeAndLiteral {
+		{token.INT, "1"},
+		{token.PLUS, "+"},
+		{token.INT, "234"},
+		{token.STAR, "*"},
+		{token.INT, "567"},
+		{token.INT, "89"},
+		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
 func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 

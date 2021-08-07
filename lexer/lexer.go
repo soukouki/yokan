@@ -93,14 +93,31 @@ func (l *Lexer) nextToken() token.Token {
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
 	case 0:
-		tok.Literal = "EOF"
 		tok.Type = token.EOF
+		tok.Literal = "EOF"
 	default:
+		if isDigit(l.ch) {
+			tok.Type = token.INT
+			tok.Literal = l.readDigits()
+			return tok
+		}
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
 
 	l.readChar()
 	return tok
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
+func (l *Lexer) readDigits() string {
+	pos := l.position
+	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[pos:l.position]
 }
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {
