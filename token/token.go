@@ -17,10 +17,10 @@ const (
 
 	// 演算子
 	ASSIGN = "="
-	ADD    = "+"
-	SUB    = "-"
-	MUL    = "*"
-	DIV    = "/"
+	PLUS   = "+"
+	MINUS  = "-"
+	STAR   = "*"
+	SLASH  = "/"
 
 	EQ     = "=="
 	NOTEQ  = "!="
