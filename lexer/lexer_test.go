@@ -10,7 +10,7 @@ type TypeAndLiteral struct {
 	Literal string
 }
 
-func TestOneCharacters(t *testing.T) {
+func TestOneCharacterKeywords(t *testing.T) {
 	input := `=+-*/,(){}<>`
 
 	expected := []TypeAndLiteral {
@@ -28,7 +28,18 @@ func TestOneCharacters(t *testing.T) {
 		{token.GT, ">"},
 		{token.EOF, "EOF"},
 	}
+	testTokens(t, input, expected)
+}
 
+func TestTwoCharacterKeywords(t *testing.T) {
+	input := "== != <= >="
+	expected := []TypeAndLiteral {
+		{token.EQ, "=="},
+		{token.NOTEQ, "!="},
+		{token.LTEQ, "<="},
+		{token.GTEQ, ">="},
+		{token.EOF, "EOF"},
+	}
 	testTokens(t, input, expected)
 }
 
