@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"yokan/token"
-	"fmt"
 )
 
 type Lexer struct {
@@ -50,9 +49,9 @@ func (l *Lexer) skipNewlines() {
 
 func (l *Lexer) skipLines() {
 	for l.ch!='\n' {
-		fmt.Print(l.input[l.position:]+"\n")
 		l.readChar()
 	}
+
 }
 
 func (l *Lexer) nextToken() token.Token {

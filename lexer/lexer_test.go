@@ -29,7 +29,7 @@ func TestOneCharacters(t *testing.T) {
 		{token.EOF, "EOF"},
 	}
 
-	_TestTokens(t, input, expected)
+	testTokens(t, input, expected)
 }
 
 func TestSpaces(t *testing.T) {
@@ -38,7 +38,7 @@ func TestSpaces(t *testing.T) {
 		{token.NEWLINE, "\n"},
 		{token.EOF, "EOF"},
 	}
-	_TestTokens(t, input, expected)
+	testTokens(t, input, expected)
 }
 
 func TestComment(t *testing.T) {
@@ -49,10 +49,22 @@ func TestComment(t *testing.T) {
 		{token.MINUS, "-"},
 		{token.EOF, "EOF"},
 	}
-	_TestTokens(t, input, expected)
+	testTokens(t, input, expected)
 }
 
-func _TestTokens(t *testing.T, input string, expected []TypeAndLiteral) {
+func TestContiguousComments(t *testing.T) {
+	input := "+//aaa\n//bbb\n-"
+	expected := []TypeAndLiteral {
+		{token.PLUS, "+"},
+		{token.NEWLINE, "\n"},
+		{token.NEWLINE, "\n"}, // トークナイザで処理するのは諦める
+		{token.MINUS, "-"},
+		{token.EOF, "EOF"},
+	}
+	testTokens(t, input, expected)
+}
+
+func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 
 	for i, expected := range expected {
