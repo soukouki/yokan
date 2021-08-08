@@ -108,6 +108,33 @@ func TestPrefixExpressions(t *testing.T) {
 	}
 }
 
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input string
+		expected string
+	} {
+		{"-a * b", "((-a) * b)"},
+		{"--a", "(-(-a))"},
+		{"-+a", "(-(+a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"a + -b - c", "((a + (-b)) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * +b / c", "((a * (+b)) / c)"},
+		{"a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 <= 4 != 3 >= 4", "((5 <= 4) != (3 <= 4))"},
+		{"1 == 2", "(1 == 2)"},
+	}
+
+	for _, tt := range tests {
+		expr := checkCommonTestsAndParseExpression(t, tt.input)
+		actual := expr.String()
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "11"
 
