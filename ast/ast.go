@@ -67,6 +67,7 @@ func (es *ExpressionStatement) String() string {
 // 代入
 
 type Assign struct {
+	Token token.Token
 	Name *Identifier
 	Value Expression
 }
@@ -105,6 +106,31 @@ func (p *PrefixExpression) String() string {
 	out.WriteString("(")
 	out.WriteString(p.Operator)
 	out.WriteString(p.Right.String())
+	out.WriteString(")")
+	return out.String()
+}
+
+
+// 中置演算子
+
+type InfixExpression struct {
+	Token token.Token
+	Left Expression
+	Operator string
+	Right Expression
+}
+
+func (i *InfixExpression) expressionNode() { }
+func (i *InfixExpression) TokenLiteral() string {
+	return i.Token.Literal
+}
+
+func (i *InfixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(i.Left.String())
+	out.WriteString(i.Operator)
+	out.WriteString(i.Right.String())
 	out.WriteString(")")
 	return out.String()
 }

@@ -72,14 +72,14 @@ func (p *Parser) parseStatement() ast.Statement {
 			return nil
 		}
 	default:
-		expr := p.parsePrefixExpression()
+		expr := p.parseInfixExpression()
 		return &ast.ExpressionStatement{Expression: expr}
 	}
 }
 
 func (p *Parser) parseAssign(name token.Token) *ast.Assign {
 	ident := &ast.Identifier{Token: name, Value: name.Literal}
-	assign := &ast.Assign{Name: ident}
+	assign := &ast.Assign{Token: ident.Token, Name: ident}
 	// TODO: とりあえず改行まで読み飛ばす
 	for !p.curTokenIs(token.NEWLINE) && !p.curTokenIs(token.EOF) {
 		p.nextToken()
@@ -87,24 +87,37 @@ func (p *Parser) parseAssign(name token.Token) *ast.Assign {
 	return assign
 }
 
+func (p *Parser) parseInfixExpression() ast.Expression {
+	left := p.parsePrefixExpression()
+	fmt.Print(p.curToken, "\n")
+	switch p.peekToken.Type {
+	case
+		token.PLUS, token.MINUS, token.STAR, token.SLASH,
+		token.EQ, token.NOTEQ,
+		token.LT, token.LTEQ, token.GT, token.GTEQ:
+	default:
+		return left
+	}
+	p.nextToken()
+	ie := &ast.InfixExpression{Token: p.curToken}
+	ie.Left = left
+	ie.Operator = p.curToken.Literal
+	p.nextToken()
+	ie.Right = p.parsePrefixExpression()
+	return ie
+}
+
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	switch p.curToken.Type {
-	case token.PLUS:
-		pe := &ast.PrefixExpression{Token: p.curToken}
-		pe.Operator = p.curToken.Literal
-		p.nextToken()
-		pe.Right = p.parsePrefixExpression()
-		return pe
-	case token.MINUS:
-		pe := &ast.PrefixExpression{Token: p.curToken}
-		pe.Operator = p.curToken.Literal
-		p.nextToken()
-		pe.Right = p.parsePrefixExpression()
-		return pe
+	case token.PLUS, token.MINUS:
 	default:
 		return p.parseLiteral()
 	}
-
+	pe := &ast.PrefixExpression{Token: p.curToken}
+	pe.Operator = p.curToken.Literal
+	p.nextToken()
+	pe.Right = p.parsePrefixExpression()
+	return pe
 }
 
 func (p *Parser) parseLiteral() ast.Expression {

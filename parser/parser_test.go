@@ -45,6 +45,43 @@ func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 	return true
 }
 
+func TestInfixExpressions(t *testing.T) {
+	infixTests := []struct {
+		input string
+		left int64
+		operator string
+		right int64
+	} {
+		{"1+2", 1, "+", 2},
+		{"3-4", 3, "-", 4},
+		{"5*6", 5, "*", 6},
+		{"7/8", 7, "/", 8},
+		{"9==10", 9, "==", 10},
+		{"11!=12", 11, "!=", 12},
+		{"13<14", 13, "<", 14},
+		{"15<=16", 15, "<=", 16},
+		{"17>18", 17, ">", 18},
+		{"19>=20", 19, ">=", 20},
+	}
+
+	for _, tt := range infixTests {
+		expr := checkCommonTestsAndParseExpression(t, tt.input)
+		ie, ok := expr.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("stmt is not ast.InfixExpression. got %T", expr)
+		}
+		if !checkIntegerLiteral(t, ie.Left, tt.left) {
+			return
+		}
+		if ie.Operator != tt.operator {
+			t.Fatalf("ie.Operator is not '%s'. got=%s", tt.operator, ie.Operator)
+		}
+		if !checkIntegerLiteral(t, ie.Right, tt.right) {
+			return
+		}
+	}
+}
+
 func TestPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
 		input string
