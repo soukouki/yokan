@@ -21,6 +21,9 @@ type Expression interface {
 	expressionNode()
 }
 
+
+// プログラム(全体)
+
 type Program struct {
 	Statements []Statement
 }
@@ -41,6 +44,9 @@ func (p Program) String() string {
 	return out.String()
 }
 
+
+// 式だけの文
+
 type ExpressionStatement struct {
 	Expression Expression
 }
@@ -56,6 +62,9 @@ func (es *ExpressionStatement) String() string {
 	}
 	return ""
 }
+
+
+// 代入
 
 type Assign struct {
 	Name *Identifier
@@ -77,6 +86,32 @@ func (as *Assign) String() string {
 	return out.String()
 }
 
+
+// 前置演算子
+
+type PrefixExpression struct {
+	Token token.Token
+	Operator string
+	Right Expression
+}
+
+func (p *PrefixExpression) expressionNode() { }
+func (p *PrefixExpression) TokenLiteral() string {
+	return p.Token.Literal
+}
+
+func (p *PrefixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(p.Operator)
+	out.WriteString(p.Right.String())
+	out.WriteString(")")
+	return out.String()
+}
+
+
+// 識別子
+
 type Identifier struct {
 	Token token.Token
 	Value string
@@ -91,6 +126,9 @@ func (i *Identifier) String() string {
 	return i.Value
 }
 
+
+// 整数リテラル
+
 type IntegerLiteral struct {
 	Token token.Token
 	Value int64
@@ -103,6 +141,9 @@ func (il *IntegerLiteral) TokenLiteral() string {
 func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
+
+
+// 文字列リテラル
 
 type StringLiteral struct {
 	Token token.Token
@@ -118,6 +159,6 @@ func (sl *StringLiteral) String() string {
 	str1 := strings.Replace(str0, "\\", `\\`, -1)
 	str2 := strings.Replace(str1, "\n", `\n`, -1)
 	str3 := strings.Replace(str2, "\t", `\t`, -1)
-	str4 := strings.Replace(str3, "\"", `"` , -1)
+	str4 := strings.Replace(str3, "\"", `\"` , -1)
 	return `"`+str4+`"`
 }

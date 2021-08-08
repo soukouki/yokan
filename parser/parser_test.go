@@ -2,6 +2,7 @@ package parser
 
 import (
 	"testing"
+	"fmt"
 	"yokan/ast"
 	"yokan/lexer"
 )
@@ -9,7 +10,7 @@ import (
 func TestAssignStatement(t *testing.T) {
 	input := "aaa = 123\nbbb = \"ccc\""
 
-	program := checkCommonAndGenerateProgram(t, input, 2)
+	program := checkCommonTestsAndParse(t, input, 2)
 
 	tests := []struct {
 		expectedIdentifier string
@@ -44,46 +45,66 @@ func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 	return true
 }
 
+func TestPrefixExpressions(t *testing.T) {
+	prefixTests := []struct {
+		input string
+		operator string
+		integerValue int64
+	} {
+		{"+12", "+", 12},
+		{"-34", "-", 34},
+	}
+
+	for _, tt := range prefixTests {
+		expr := checkCommonTestsAndParseExpression(t, tt.input)
+		pe, ok := expr.(*ast.PrefixExpression)
+		if !ok {
+			t.Fatalf("stmt is not ast.PrefixExpression. got=%T", expr)
+		}
+		if pe.Operator != tt.operator {
+			t.Fatalf("exp.Operator is not '%s'. got=%s",
+				tt.operator, pe.Operator)
+		}
+		if !checkIntegerLiteral(t, pe.Right, tt.integerValue) {
+			return
+		}
+	}
+}
+
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "11"
 
-	program := checkCommonAndGenerateProgram(t, input, 1)
+	expr := checkCommonTestsAndParseExpression(t, input)
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
-			program.Statements[0])
-	}
+	checkIntegerLiteral(t, expr, 11)
+}
 
-	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
+func checkIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+	integ, ok := il.(*ast.IntegerLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.IntegerLiteral. got=%T, stmt.Expression",
-			program.Statements[0])
+		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
+		return false
 	}
-	if literal.Value != 11 {
-		t.Fatalf("literal.Value not %d. got=%d", 11, literal.Value)
+	if integ.Value != value {
+		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		return false
 	}
-	if literal.TokenLiteral() != "11" {
-		t.Fatalf("literal.TokenLiteral not %s. got %s",
-			"11", literal.TokenLiteral())
+	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Errorf("integ.TokenLiteral not %d. got %s", value, integ.TokenLiteral())
+		return false
 	}
+	return true
 }
 
 func TestStringLiteralExpression(t *testing.T) {
 	input := `"aa\n\t\"a"`
 
-	program := checkCommonAndGenerateProgram(t, input, 1)
+	expr := checkCommonTestsAndParseExpression(t, input)
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
-			program.Statements[0])
-	}
-
-	literal, ok := stmt.Expression.(*ast.StringLiteral)
+	literal, ok := expr.(*ast.StringLiteral)
 	if !ok {
 		t.Fatalf("exp not *ast.StringLiteral. got=%T, stmt.Expression",
-			program.Statements[0])
+			expr)
 	}
 	if literal.Value != "aa\n\t\"a" {
 		t.Fatalf("Literal.Value not %s. got=%s", "aa", literal.Value)
@@ -94,7 +115,19 @@ func TestStringLiteralExpression(t *testing.T) {
 	}
 }
 
-func checkCommonAndGenerateProgram(t *testing.T, input string, neededStmt int) *ast.Program {
+func checkCommonTestsAndParseExpression(t *testing.T, input string) ast.Expression {
+	program := checkCommonTestsAndParse(t, input, 1)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
+			program.Statements[0])
+	}
+
+	return stmt.Expression
+}
+
+func checkCommonTestsAndParse(t *testing.T, input string, neededStmt int) *ast.Program {
 	l := lexer.New(input)
 	p := New(l)
 

@@ -71,14 +71,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		} else {
 			return nil
 		}
-	case token.INT:
-		exp := p.parseIntegerLiteral()
-		return &ast.ExpressionStatement{Expression: exp}
-	case token.STRING:
-		exp := p.parseStringLiteral()
-		return &ast.ExpressionStatement{Expression: exp}
 	default:
-		return nil
+		expr := p.parsePrefixExpression()
+		return &ast.ExpressionStatement{Expression: expr}
 	}
 }
 
@@ -90,6 +85,37 @@ func (p *Parser) parseAssign(name token.Token) *ast.Assign {
 		p.nextToken()
 	}
 	return assign
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	switch p.curToken.Type {
+	case token.PLUS:
+		pe := &ast.PrefixExpression{Token: p.curToken}
+		pe.Operator = p.curToken.Literal
+		p.nextToken()
+		pe.Right = p.parsePrefixExpression()
+		return pe
+	case token.MINUS:
+		pe := &ast.PrefixExpression{Token: p.curToken}
+		pe.Operator = p.curToken.Literal
+		p.nextToken()
+		pe.Right = p.parsePrefixExpression()
+		return pe
+	default:
+		return p.parseLiteral()
+	}
+
+}
+
+func (p *Parser) parseLiteral() ast.Expression {
+	switch p.curToken.Type {
+	case token.INT:
+		return p.parseIntegerLiteral()
+	case token.STRING:
+		return p.parseStringLiteral()
+	default:
+		return nil
+	}
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
