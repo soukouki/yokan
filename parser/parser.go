@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 	"yokan/ast"
 	"yokan/lexer"
 	"yokan/token"
@@ -33,6 +34,10 @@ func (p *Parser) Errors() []string {
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
 		t, p.peekToken.Type)
+	p.appendError(msg)
+}
+
+func (p *Parser) appendError(msg string) {
 	p.errors = append(p.errors, msg)
 }
 
@@ -65,6 +70,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		} else {
 			return nil
 		}
+	case token.INT:
+		lit := p.parseIntegerLiteral()
+		return &ast.ExpressionStatement{Expression: lit}
 	default:
 		return nil
 	}
@@ -78,6 +86,19 @@ func (p *Parser) parseAssignStatement(name token.Token) *ast.AssignStatement {
 		p.nextToken()
 	}
 	return stmt
+}
+
+func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
+	lit := &ast.IntegerLiteral{Token: p.curToken}
+
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q aas integer", p.curToken.Literal)
+		p.appendError(msg)
+		return nil
+	}
+	lit.Value = value
+	return lit
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {

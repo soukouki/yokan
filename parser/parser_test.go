@@ -43,6 +43,31 @@ func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 	return true
 }
 
+func TestIntegerLiteralExpression(t *testing.T) {
+	input := "11"
+
+	program := checkCommonAndGenerateProgram(t, input, 1)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
+			program.Statements[0])
+	}
+
+	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.IntegerLiteral. got=%T, stmt.Expression",
+			program.Statements[0])
+	}
+	if literal.Value != 11 {
+		t.Fatalf("literal.Value not %d. got=%d", 11, literal.Value)
+	}
+	if literal.TokenLiteral() != "11" {
+		t.Fatalf("literal.TokenLiteral not %s. got %s",
+			"11", literal.TokenLiteral())
+	}
+}
+
 func checkCommonAndGenerateProgram(t *testing.T, input string, neededStmt int) *ast.Program {
 	l := lexer.New(input)
 	p := New(l)
