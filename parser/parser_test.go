@@ -27,17 +27,18 @@ func TestAssignStatement(t *testing.T) {
 }
 
 func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
-	assignStmt, ok := s.(*ast.AssignStatement)
+	exprStmt, ok := s.(*ast.ExpressionStatement)
+	assign := exprStmt.Expression.(*ast.Assign)
 	if !ok {
 		t.Errorf("s not *ast.AssignStatement. got=%T", s)
 		return false
 	}
-	if assignStmt.Name.Value != name {
-		t.Errorf("assignStmt.Name.Value not '%s'. got=%s", name, assignStmt.Name.Value)
+	if assign.Name.Value != name {
+		t.Errorf("assign.Name.Value not '%s'. got=%s", name, assign.Name.Value)
 		return false
 	}
-	if assignStmt.Name.TokenLiteral() != name {
-		t.Errorf("assignStmt.Name.TokenLiteral() not '%s'. got=%s", name, assignStmt.Name.TokenLiteral())
+	if assign.Name.TokenLiteral() != name {
+		t.Errorf("assign.Name.TokenLiteral() not '%s'. got=%s", name, assign.Name.TokenLiteral())
 		return false
 	}
 	return true

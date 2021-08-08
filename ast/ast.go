@@ -40,26 +40,6 @@ func (p Program) String() string {
 	return out.String()
 }
 
-type AssignStatement struct {
-	Name *Identifier
-	Value Expression
-}
-
-func (as *AssignStatement) statementNode() { }
-func (as *AssignStatement) TokenLiteral() string {
-	return ""
-}
-
-func (as *AssignStatement) String() string {
-	var out bytes.Buffer
-	out.WriteString(as.Name.String()+" = ")
-	if as.Value != nil {
-		out.WriteString(as.Value.String())
-	}
-	out.WriteString("\n")
-	return out.String()
-}
-
 type ExpressionStatement struct {
 	Expression Expression
 }
@@ -74,6 +54,26 @@ func (es *ExpressionStatement) String() string {
 		return es.Expression.String()
 	}
 	return ""
+}
+
+type Assign struct {
+	Name *Identifier
+	Value Expression
+}
+
+func (as *Assign) expressionNode() { }
+func (as *Assign) TokenLiteral() string {
+	return ""
+}
+
+func (as *Assign) String() string {
+	var out bytes.Buffer
+	out.WriteString(as.Name.String()+" = ")
+	if as.Value != nil {
+		out.WriteString(as.Value.String())
+	}
+	out.WriteString("\n")
+	return out.String()
 }
 
 type Identifier struct {

@@ -66,7 +66,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch name.Type {
 	case token.IDENT:
 		if p.expectPeek(token.ASSIGN) {
-			return p.parseAssignStatement(name)
+			asgn := p.parseAssign(name)
+			return &ast.ExpressionStatement{Expression: asgn}
 		} else {
 			return nil
 		}
@@ -78,14 +79,14 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseAssignStatement(name token.Token) *ast.AssignStatement {
+func (p *Parser) parseAssign(name token.Token) *ast.Assign {
 	ident := &ast.Identifier{Token: name, Value: name.Literal}
-	stmt := &ast.AssignStatement{Name: ident}
+	assign := &ast.Assign{Name: ident}
 	// TODO: とりあえず改行まで読み飛ばす
 	for !p.curTokenIs(token.NEWLINE) && !p.curTokenIs(token.EOF) {
 		p.nextToken()
 	}
-	return stmt
+	return assign
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
