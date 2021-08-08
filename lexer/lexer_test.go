@@ -30,7 +30,7 @@ func TestOneCharacterKeywords(t *testing.T) {
 		{token.RBRACK, "]"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestTwoCharacterKeywords(t *testing.T) {
@@ -42,7 +42,7 @@ func TestTwoCharacterKeywords(t *testing.T) {
 		{token.GTEQ, ">="},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestSpaces(t *testing.T) {
@@ -51,7 +51,7 @@ func TestSpaces(t *testing.T) {
 		{token.NEWLINE, "\n"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestComment(t *testing.T) {
@@ -62,7 +62,7 @@ func TestComment(t *testing.T) {
 		{token.MINUS, "-"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestContiguousComments(t *testing.T) {
@@ -74,7 +74,7 @@ func TestContiguousComments(t *testing.T) {
 		{token.MINUS, "-"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestInteger(t *testing.T) {
@@ -88,7 +88,7 @@ func TestInteger(t *testing.T) {
 		{token.INT, "89"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestIdentifier(t *testing.T) {
@@ -105,7 +105,7 @@ func TestIdentifier(t *testing.T) {
 		{token.IDENT, "fff"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestString(t *testing.T) {
@@ -118,7 +118,7 @@ func TestString(t *testing.T) {
 		{token.STRING, "\n"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestKeyWords(t *testing.T) {
@@ -131,7 +131,7 @@ func TestKeyWords(t *testing.T) {
 		{token.ELSE, "else"},
 		{token.EOF, "EOF"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
 func TestComplexSource(t *testing.T) {
@@ -243,10 +243,10 @@ func TestComplexSource(t *testing.T) {
 		{token.NEWLINE, "\n"},
 		{token.RBRACE, "}"},
 	}
-	testTokens(t, input, expected)
+	checkTokens(t, input, expected)
 }
 
-func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
+func checkTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 
 	for i, expected := range expected {

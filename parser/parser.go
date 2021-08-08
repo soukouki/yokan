@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"yokan/ast"
 	"yokan/lexer"
 	"yokan/token"
@@ -8,17 +9,31 @@ import (
 
 type Parser struct {
 	l *lexer.Lexer
+	errors []string
 
 	curToken  token.Token
 	peekToken token.Token
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{
+		l: l,
+		errors: []string {},
+	}
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) peekError(t token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
+		t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }
 
 func (p *Parser) nextToken() {
@@ -42,10 +57,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	switch p.curToken.Type {
+	name := p.curToken
+	switch name.Type {
 	case token.IDENT:
-		if p.peekTokenIs(token.ASSIGN) {
-			return p.parseAssignStatement()
+		if p.expectPeek(token.ASSIGN) {
+			return p.parseAssignStatement(name)
 		} else {
 			return nil
 		}
@@ -54,11 +70,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	if !p.curTokenIs(token.IDENT) { return nil }
-	name := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	if !p.expectPeek(token.ASSIGN) { return nil }
-	stmt := &ast.AssignStatement{Name: name}
+func (p *Parser) parseAssignStatement(name token.Token) *ast.AssignStatement {
+	ident := &ast.Identifier{Token: name, Value: name.Literal}
+	stmt := &ast.AssignStatement{Name: ident}
 	// TODO: とりあえず改行まで読み飛ばす
 	for !p.curTokenIs(token.NEWLINE) && !p.curTokenIs(token.EOF) {
 		p.nextToken()
@@ -79,6 +93,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		p.peekError(t)
 		return false
 	}
 }
