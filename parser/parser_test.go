@@ -8,20 +8,8 @@ import (
 
 func TestAssignStatement(t *testing.T) {
 	input := "aaa = 123\nbbb = \"ccc\""
-	
-	l := lexer.New(input)
-	p := New(l)
 
-	program := p.ParseProgram()
-	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
-	}
-	checkParseErrors(t, p)
-
-	if len(program.Statements) != 2 {
-		t.Fatalf("program.Statements does not contain 2 statements. got=%d",
-			len(program.Statements))
-	}
+	program := checkCommonAndGenerateProgram(t, input, 2)
 
 	tests := []struct {
 		expectedIdentifier string
@@ -53,6 +41,24 @@ func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 		return false
 	}
 	return true
+}
+
+func checkCommonAndGenerateProgram(t *testing.T, input string, neededStmt int) *ast.Program {
+	l := lexer.New(input)
+	p := New(l)
+
+	program := p.ParseProgram()
+	if program == nil {
+		t.Fatalf("ParseProgram() returned nil")
+	}
+	checkParseErrors(t, p)
+
+	if len(program.Statements) != neededStmt {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d",
+			neededStmt, len(program.Statements))
+	}
+
+	return program
 }
 
 func checkParseErrors(t *testing.T, p *Parser) {
