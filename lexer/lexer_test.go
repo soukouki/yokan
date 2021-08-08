@@ -92,7 +92,7 @@ func TestInteger(t *testing.T) {
 }
 
 func TestIdentifier(t *testing.T) {
-	input := "a+bbb*CcC ddddd _eE_123e"
+	input := "a+bbb*CcC ddddd _eE_123e\nfff"
 	expected := []TypeAndLiteral {
 		{token.IDENT, "a"},
 		{token.PLUS, "+"},
@@ -101,6 +101,8 @@ func TestIdentifier(t *testing.T) {
 		{token.IDENT, "CcC"},
 		{token.IDENT, "ddddd"},
 		{token.IDENT, "_eE_123e"},
+		{token.NEWLINE, "\n"},
+		{token.IDENT, "fff"},
 		{token.EOF, "EOF"},
 	}
 	testTokens(t, input, expected)
@@ -248,7 +250,7 @@ func testTokens(t *testing.T, input string, expected []TypeAndLiteral) {
 	l := New(input)
 
 	for i, expected := range expected {
-		tok := l.nextToken()
+		tok := l.NextToken()
 		if tok.Type != expected.Type {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
 				i, expected.Type, tok.Type)

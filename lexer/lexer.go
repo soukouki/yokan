@@ -54,7 +54,7 @@ func (l *Lexer) skipLines() {
 
 }
 
-func (l *Lexer) nextToken() token.Token {
+func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
 	l.skipWhiteSpaces()
@@ -127,9 +127,7 @@ func (l *Lexer) nextToken() token.Token {
 			return token.Token{Type: token.INT, Literal: l.readDigits()}
 		} else if isLetter(l.ch) {
 			literal := l.readIdentifier()
-			var tokenType token.TokenType
-			var isExist bool
-			tokenType, isExist = token.Keywords[literal]
+			tokenType, isExist := token.Keywords[literal]
 			if isExist {
 				return token.Token{Type: tokenType, Literal: literal}
 			} else {
