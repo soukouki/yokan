@@ -72,8 +72,11 @@ func (p *Parser) parseStatement() ast.Statement {
 			return nil
 		}
 	case token.INT:
-		lit := p.parseIntegerLiteral()
-		return &ast.ExpressionStatement{Expression: lit}
+		exp := p.parseIntegerLiteral()
+		return &ast.ExpressionStatement{Expression: exp}
+	case token.STRING:
+		exp := p.parseStringLiteral()
+		return &ast.ExpressionStatement{Expression: exp}
 	default:
 		return nil
 	}
@@ -94,12 +97,19 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q aas integer", p.curToken.Literal)
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
 		p.appendError(msg)
 		return nil
 	}
 	lit.Value = value
 	return lit
+}
+
+func (p *Parser) parseStringLiteral() *ast.StringLiteral {
+	return &ast.StringLiteral{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
+	}
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
