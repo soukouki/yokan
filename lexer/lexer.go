@@ -51,7 +51,6 @@ func (l *Lexer) skipLines() {
 	for l.ch!='\n' {
 		l.readChar()
 	}
-
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -108,6 +107,7 @@ func (l *Lexer) NextToken() token.Token {
 	case '\n':
 		tok = newToken(token.NEWLINE, l.ch)
 		l.skipNewlines()
+		return tok
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
 	case '(':
