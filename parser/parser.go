@@ -158,7 +158,7 @@ func (p *Parser) parseMulDivExpressionWithLeft(left ast.Expression) ast.Expressi
 	ie.Left = left
 	ie.Operator = p.curToken.Literal
 	p.nextToken()
-	ie.Right = p.parseLiteralAndIdentify()
+	ie.Right = p.parsePrefixExpression()
 	return p.parseMulDivExpressionWithLeft(ie)
 }
 
