@@ -76,7 +76,6 @@ func (p *Parser) parseStatement() *ast.ExpressionStatement {
 	default:
 		expr = p.parseInfixExpression()
 	}
-	fmt.Print(expr, "\n")
 	return &ast.ExpressionStatement{Expression: expr}
 }
 
@@ -89,21 +88,25 @@ func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
 
 func (p *Parser) parseInfixExpression() ast.Expression {
 	left := p.parsePrefixExpression()
+	return p.parseInfixExpressionWithLeft(left)
+}
+
+func (p *Parser) parseInfixExpressionWithLeft(left ast.Expression) ast.Expression {
 	switch p.peekToken.Type {
-	case
-		token.PLUS, token.MINUS, token.STAR, token.SLASH,
-		token.EQ, token.NOTEQ,
-		token.LT, token.LTEQ, token.GT, token.GTEQ:
-	default:
-		return left
-	}
-	p.nextToken()
-	ie := &ast.InfixExpression{Token: p.curToken}
-	ie.Left = left
-	ie.Operator = p.curToken.Literal
-	p.nextToken()
-	ie.Right = p.parseInfixExpression()
-	return ie
+		case
+			token.PLUS, token.MINUS, token.STAR, token.SLASH,
+			token.EQ, token.NOTEQ,
+			token.LT, token.LTEQ, token.GT, token.GTEQ:
+		default:
+			return left
+		}
+		p.nextToken()
+		ie := &ast.InfixExpression{Token: p.curToken}
+		ie.Left = left
+		ie.Operator = p.curToken.Literal
+		p.nextToken()
+		ie.Right = p.parsePrefixExpression()
+		return p.parseInfixExpressionWithLeft(ie)
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
