@@ -113,10 +113,7 @@ func TestPrefixExpressions(t *testing.T) {
 }
 
 func TestOperatorPrecedenceParsing(t *testing.T) {
-	tests := []struct {
-		input string
-		expected string
-	} {
+	tests := []testInString {
 		{"-a * b", "((-a) * b)"},
 		{"--a", "(-(-a))"},
 		{"-+a", "(-(+a))"},
@@ -133,7 +130,25 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"z == a * b + c", "(z == ((a * b) + c))"},
 		{"z == a + b * c", "(z == (a + (b * c)))"},
 	}
+	checkExpressionsInString(t, tests)
+}
 
+func TestParenthesisExpressions(t *testing.T) {
+	tests := []testInString {
+		{"a * (b + c)", "(a * (b + c))"},
+		{"(a + b) * c", "((a + b) * c)"},
+		{"(a + ((b > c) == (d <= e))) * f", "((a + ((b > c) == (d <= e))) * f)"},
+		{"a * (b != c)", "(a * (b != c))"},
+	}
+	checkExpressionsInString(t, tests)
+}
+
+type testInString struct {
+	input string
+	expected string
+}
+
+func checkExpressionsInString(t *testing.T, tests []testInString) {
 	for _, tt := range tests {
 		expr := checkCommonTestsAndParseExpression(t, tt.input)
 		actual := expr.String()

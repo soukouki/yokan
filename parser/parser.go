@@ -71,10 +71,10 @@ func (p *Parser) parseStatement() *ast.ExpressionStatement {
 			name := p.parseIdentifier()
 			expr = p.parseAssign(*name)
 		} else {
-			expr = p.parseInfixExpression()
+			expr = p.parseExpression()
 		}
 	default:
-		expr = p.parseInfixExpression()
+		expr = p.parseExpression()
 	}
 	return &ast.ExpressionStatement{Expression: expr}
 }
@@ -83,11 +83,11 @@ func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
 	assign := &ast.Assign{Token: name.Token, Name: &name}
 	p.nextToken()
 	p.nextToken()
-	assign.Value = p.parseInfixExpression()
+	assign.Value = p.parseExpression()
 	return assign
 }
 
-func (p *Parser) parseInfixExpression() ast.Expression {
+func (p *Parser) parseExpression() ast.Expression {
 	return p.parseEqExpression()
 }
 
@@ -142,7 +142,7 @@ func (p *Parser) parseAddSubExpression() ast.Expression {
 }
 
 func (p *Parser) parseMulDivExpression() ast.Expression {
-	expr := p.parsePrefixExpression()
+	expr := p.parseParenthesisExpression()
 	for p.peekTokenIs(token.STAR) || p.peekTokenIs(token.SLASH) {
 		p.nextToken()
 		newExpr := &ast.InfixExpression{
@@ -151,26 +151,33 @@ func (p *Parser) parseMulDivExpression() ast.Expression {
 			Operator: p.curToken.Literal,
 		}
 		p.nextToken()
-		newExpr.Right = p.parsePrefixExpression()
+		newExpr.Right = p.parseParenthesisExpression()
 		expr = newExpr
 	}
 	return expr
 }
 
-func (p *Parser) parsePrefixExpression() ast.Expression {
-	switch p.curToken.Type {
-	case token.PLUS, token.MINUS:
-	default:
-		lit := p.parseLiteralAndIdentify()
-		if lit != nil {
-			return lit
-		}
+func (p *Parser) parseParenthesisExpression() ast.Expression {
+	if p.curTokenIs(token.LPAREN) {
+		p.nextToken()
+		expr := p.parseExpression()
+		p.expectPeek(token.RPAREN)
+		return expr
+	} else {
+		return p.parsePrefixExpression()
 	}
-	pe := &ast.PrefixExpression{Token: p.curToken}
-	pe.Operator = p.curToken.Literal
-	p.nextToken()
-	pe.Right = p.parsePrefixExpression()
-	return pe
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	if p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) {
+		pe := &ast.PrefixExpression{Token: p.curToken}
+		pe.Operator = p.curToken.Literal
+		p.nextToken()
+		pe.Right = p.parsePrefixExpression()
+		return pe
+	} else {
+		return p.parseLiteralAndIdentify()
+	}
 }
 
 func (p *Parser) parseLiteralAndIdentify() ast.Expression {
