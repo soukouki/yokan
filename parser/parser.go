@@ -182,6 +182,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 func (p *Parser) parseLiteralAndIdentify() ast.Expression {
 	switch p.curToken.Type {
+	case token.LBRACK:
+		return p.parseArrayLiteral()
 	case token.INT:
 		return p.parseIntegerLiteral()
 	case token.STRING:
@@ -191,6 +193,37 @@ func (p *Parser) parseLiteralAndIdentify() ast.Expression {
 	default:
 		return nil
 	}
+}
+
+func (p *Parser) parseArrayLiteral() *ast.ArrayLiteral {
+	tok := p.curToken
+	p.nextToken()
+	var list []ast.Expression
+	for {
+		if p.peekTokenIs(token.RBRACK) {
+			empty := []ast.Expression { }
+			list = append(list, &ast.ArrayLiteral{Token: p.curToken, Value: empty})
+			p.nextToken()
+			break
+		}
+		expr := p.parseExpression()
+		list = append(list, expr)
+		// , ...
+		// ]
+		// , ]
+		if p.peekTokenIs(token.RBRACK) {
+			p.nextToken()
+			break
+		}
+		if p.expectPeek(token.COMMA) {
+			p.nextToken()
+			if p.curTokenIs(token.RBRACK) {
+				break
+			}
+		}
+	}
+	p.nextToken()
+	return &ast.ArrayLiteral{Token: tok, Value: list}
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {

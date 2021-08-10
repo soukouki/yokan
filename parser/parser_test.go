@@ -166,6 +166,59 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	checkIntegerLiteral(t, expr, 11)
 }
 
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"aa\n\t\"a"`
+
+	expr := checkCommonTestsAndParseExpression(t, input)
+
+	checkStringLiteral(t, expr, "aa\n\t\"a")	
+}
+
+func TestArrayLiteralExperession(t *testing.T) {
+	input := `[12, "aa", [33, [], ]]`
+
+	expr := checkCommonTestsAndParseExpression(t, input)
+
+	array, ok := expr.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("array not *ast.ArrayLiteral. got=%T", array)
+	}
+	if len(array.Value) != 3 {
+		t.Fatalf("len(array.Value) not 3. got=%d", len(array.Value))
+	}
+	checkIntegerLiteral(t, array.Value[0], 12)
+	checkStringLiteral(t, array.Value[1], "aa")
+	
+	innerArray, ok := array.Value[2].(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("innerArray not *ast.ArrayLiteral. got=%T", innerArray)
+	}
+	if len(innerArray.Value) != 2 {
+		t.Fatalf("len(innerArray.Value) not 2. got=%d", len(array.Value))
+	}
+	checkIntegerLiteral(t, innerArray.Value[0], 33)
+
+	innerInnerArray, ok := innerArray.Value[1].(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("innerInnerArray not *ast.ArrayLiteral. got=%T", innerInnerArray)
+	}
+	if len(innerInnerArray.Value) != 0 {
+		t.Fatalf("len(innerArray.Value) not 0. got=%d", len(innerInnerArray.Value))
+	}
+}
+
+func checkCommonTestsAndParseExpression(t *testing.T, input string) ast.Expression {
+	program := checkCommonTestsAndParse(t, input, 1)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
+			program.Statements[0])
+	}
+
+	return stmt.Expression
+}
+
 func checkIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	integ, ok := il.(*ast.IntegerLiteral)
 	if !ok {
@@ -183,35 +236,22 @@ func checkIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	return true
 }
 
-func TestStringLiteralExpression(t *testing.T) {
-	input := `"aa\n\t\"a"`
-
-	expr := checkCommonTestsAndParseExpression(t, input)
-
-	literal, ok := expr.(*ast.StringLiteral)
+func checkStringLiteral(t *testing.T, sl ast.Expression, value string) bool {
+	literal, ok := sl.(*ast.StringLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.StringLiteral. got=%T, stmt.Expression",
-			expr)
+		t.Fatalf("exp not *ast.StringLiteral. got=%T", sl)
+		return false
 	}
-	if literal.Value != "aa\n\t\"a" {
-		t.Fatalf("Literal.Value not %s. got=%s", "aa", literal.Value)
+	if literal.Value != value {
+		t.Fatalf("Literal.Value not %s. got=%s", value, literal.Value)
+		return false
 	}
-	if literal.TokenLiteral() != "aa\n\t\"a" {
+	if literal.TokenLiteral() != value {
 		t.Fatalf("literal.TokenLiteral not %s. got %s",
-			"aa\n\t\"a", literal.TokenLiteral())
+			value, literal.TokenLiteral())
+		return false
 	}
-}
-
-func checkCommonTestsAndParseExpression(t *testing.T, input string) ast.Expression {
-	program := checkCommonTestsAndParse(t, input, 1)
-
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
-			program.Statements[0])
-	}
-
-	return stmt.Expression
+	return true
 }
 
 func checkCommonTestsAndParse(t *testing.T, input string, neededStmt int) *ast.Program {

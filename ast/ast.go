@@ -138,6 +138,33 @@ func (i *InfixExpression) String() string {
 }
 
 
+// 配列
+
+type ArrayLiteral struct {
+	Token token.Token
+	Value []Expression
+}
+
+func (a *ArrayLiteral) expressionNode() { }
+func (a *ArrayLiteral) TokenLiteral() string {
+	return a.Token.Literal
+}
+
+func (a *ArrayLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("[")
+	len := len(a.Value)
+	for i, e := range a.Value {
+		out.WriteString(e.String())
+		if i != len {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString("]")
+	return out.String()
+}
+
+
 // 識別子
 
 type Identifier struct {
@@ -187,6 +214,6 @@ func (sl *StringLiteral) String() string {
 	str1 := strings.Replace(str0, "\\", `\\`, -1)
 	str2 := strings.Replace(str1, "\n", `\n`, -1)
 	str3 := strings.Replace(str2, "\t", `\t`, -1)
-	str4 := strings.Replace(str3, "\"", `\"` , -1)
+	str4 := strings.Replace(str3, "\"", `\"`, -1)
 	return `"`+str4+`"`
 }
