@@ -87,76 +87,73 @@ func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
 }
 
 func (p *Parser) parseInfixExpression() ast.Expression {
-	left := p.parsePrefixExpression()
-	return p.parseEqExpressionWithLeft(left)
+	return p.parseEqExpression()
 }
 
-func (p *Parser) parseEqExpressionWithLeft(left ast.Expression) ast.Expression {
-	switch p.peekToken.Type {
-	case token.EQ, token.NOTEQ:
-	default:
-		return p.parseLTGTExpressionWithLeft(left)
+func (p *Parser) parseEqExpression() ast.Expression {
+	expr := p.parseLTGTExpression()
+	for p.peekTokenIs(token.EQ) || p.peekTokenIs(token.NOTEQ) {
+		p.nextToken()
+		newExpr := &ast.InfixExpression{
+			Token: p.curToken,
+			Left: expr,
+			Operator: p.curToken.Literal,
+		}
+		p.nextToken()
+		newExpr.Right = p.parseLTGTExpression()
+		expr = newExpr
 	}
-	p.nextToken()
-	ie := &ast.InfixExpression{
-		Token: p.curToken,
-		Left: left,
-		Operator: p.curToken.Literal,
-	}
-	p.nextToken()
-	ie.Right = p.parsePrefixExpression()
-	return p.parseEqExpressionWithLeft(ie)
+	return expr
 }
 
-func (p *Parser) parseLTGTExpressionWithLeft(left ast.Expression) ast.Expression {
-	switch p.peekToken.Type {
-	case token.LT, token.LTEQ, token.GT, token.GTEQ:
-	default:
-		return p.parseAddSubExpressionWithLeft(left)
+func (p *Parser) parseLTGTExpression() ast.Expression {
+	expr := p.parseAddSubExpression()
+	for (
+		p.peekTokenIs(token.LT) || p.peekTokenIs(token.LTEQ) || 
+		p.peekTokenIs(token.GT) || p.peekTokenIs(token.GTEQ) ) {
+		p.nextToken()
+		newExpr := &ast.InfixExpression{
+			Token: p.curToken,
+			Left: expr,
+			Operator: p.curToken.Literal,
+		}
+		p.nextToken()
+		newExpr.Right = p.parseAddSubExpression()
+		expr = newExpr
 	}
-	p.nextToken()
-	ie := &ast.InfixExpression{
-		Token: p.curToken,
-		Left: left,
-		Operator: p.curToken.Literal,
-	}
-	p.nextToken()
-	ie.Right = p.parsePrefixExpression()
-	return p.parseLTGTExpressionWithLeft(ie)
+	return expr
 }
 
-func (p *Parser) parseAddSubExpressionWithLeft(left ast.Expression) ast.Expression {
-	switch p.peekToken.Type {
-	case token.PLUS, token.MINUS:
-	default:
-		return p.parseMulDivExpressionWithLeft(left)
+func (p *Parser) parseAddSubExpression() ast.Expression {
+	expr := p.parseMulDivExpression()
+	for p.peekTokenIs(token.PLUS) || p.peekTokenIs(token.MINUS) {
+		p.nextToken()
+		newExpr := &ast.InfixExpression{
+			Token: p.curToken,
+			Left: expr,
+			Operator: p.curToken.Literal,
+		}
+		p.nextToken()
+		newExpr.Right = p.parseMulDivExpression()
+		expr = newExpr
 	}
-	p.nextToken()
-	ie := &ast.InfixExpression{
-		Token: p.curToken,
-		Left: left,
-		Operator: p.curToken.Literal,
-	}
-	p.nextToken()
-	ie.Right = p.parsePrefixExpression()
-	return p.parseAddSubExpressionWithLeft(ie)
+	return expr
 }
 
-func (p *Parser) parseMulDivExpressionWithLeft(left ast.Expression) ast.Expression {
-	switch p.peekToken.Type {
-	case token.STAR, token.SLASH:
-	default:
-		return left
+func (p *Parser) parseMulDivExpression() ast.Expression {
+	expr := p.parsePrefixExpression()
+	for p.peekTokenIs(token.STAR) || p.peekTokenIs(token.SLASH) {
+		p.nextToken()
+		newExpr := &ast.InfixExpression{
+			Token: p.curToken,
+			Left: expr,
+			Operator: p.curToken.Literal,
+		}
+		p.nextToken()
+		newExpr.Right = p.parsePrefixExpression()
+		expr = newExpr
 	}
-	p.nextToken()
-	ie := &ast.InfixExpression{
-		Token: p.curToken,
-		Left: left,
-		Operator: p.curToken.Literal,
-	}
-	p.nextToken()
-	ie.Right = p.parsePrefixExpression()
-	return p.parseMulDivExpressionWithLeft(ie)
+	return expr
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
