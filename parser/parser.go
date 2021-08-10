@@ -82,6 +82,7 @@ func (p *Parser) parseStatement() *ast.ExpressionStatement {
 func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
 	assign := &ast.Assign{Token: name.Token, Name: &name}
 	p.nextToken()
+	p.nextToken()
 	assign.Value = p.parseInfixExpression()
 	return assign
 }

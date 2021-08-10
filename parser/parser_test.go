@@ -8,26 +8,27 @@ import (
 )
 
 func TestAssignStatement(t *testing.T) {
-	input := "aaa = 123\nbbb = \"ccc\""
+	input := "aaa = \"bbb\"\nccc = 1 + 2 == ddd"
 
 	program := checkCommonTestsAndParse(t, input, 2)
 
 	tests := []struct {
 		expectedIdentifier string
+		expectedExpression string
 	} {
-		{"aaa"},
-		{"bbb"},
+		{"aaa", `"bbb"`},
+		{"ccc", "((1 + 2) == ddd)"},
 	}
 
 	for i, tt := range tests {
 		stmt := program.Statements[i]
-		if !checkAssignStatement(t, stmt, tt.expectedIdentifier) {
+		if !checkAssignStatement(t, stmt, tt.expectedIdentifier, tt.expectedExpression) {
 			return
 		}
 	}
 }
 
-func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
+func checkAssignStatement(t *testing.T, s ast.Statement, name string, expected string) bool {
 	exprStmt, ok := s.(*ast.ExpressionStatement)
 	assign := exprStmt.Expression.(*ast.Assign)
 	if !ok {
@@ -41,6 +42,9 @@ func checkAssignStatement(t *testing.T, s ast.Statement, name string) bool {
 	if assign.Name.TokenLiteral() != name {
 		t.Errorf("assign.Name.TokenLiteral() not '%s'. got=%s", name, assign.Name.TokenLiteral())
 		return false
+	}
+	if assign.Value.String() != expected {
+		t.Errorf("assign.Value.String() not '%s'. got %s", expected, assign.Value.String())
 	}
 	return true
 }
