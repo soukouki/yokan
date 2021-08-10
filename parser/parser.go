@@ -75,6 +75,7 @@ func (p *Parser) parseStatement() *ast.ExpressionStatement {
 		}
 	default:
 		expr = p.parseInfixExpression()
+		fmt.Print(expr, "\n")
 	}
 	return &ast.ExpressionStatement{Expression: expr}
 }
@@ -88,28 +89,81 @@ func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
 
 func (p *Parser) parseInfixExpression() ast.Expression {
 	left := p.parsePrefixExpression()
-	return p.parseInfixExpressionWithLeft(left)
+	return p.parseEqExpressionWithLeft(left)
 }
 
-func (p *Parser) parseInfixExpressionWithLeft(left ast.Expression) ast.Expression {
+func (p *Parser) parseEqExpressionWithLeft(left ast.Expression) ast.Expression {
+	fmt.Print("Eq", left, " ", p.peekToken, "\n")
 	switch p.peekToken.Type {
-		case
-			token.PLUS, token.MINUS, token.STAR, token.SLASH,
-			token.EQ, token.NOTEQ,
-			token.LT, token.LTEQ, token.GT, token.GTEQ:
-		default:
-			return left
-		}
-		p.nextToken()
-		ie := &ast.InfixExpression{Token: p.curToken}
-		ie.Left = left
-		ie.Operator = p.curToken.Literal
-		p.nextToken()
-		ie.Right = p.parsePrefixExpression()
-		return p.parseInfixExpressionWithLeft(ie)
+	case token.EQ, token.NOTEQ:
+	default:
+		return p.parseLTGTExpressionWithLeft(left)
+	}
+	p.nextToken()
+	ie := &ast.InfixExpression{
+		Token: p.curToken,
+		Left: left,
+		Operator: p.curToken.Literal,
+	}
+	p.nextToken()
+	ie.Right = p.parseLTGTExpressionWithLeft(p.parsePrefixExpression())
+	return p.parseEqExpressionWithLeft(ie)
+}
+
+func (p *Parser) parseLTGTExpressionWithLeft(left ast.Expression) ast.Expression {
+	fmt.Print("  LTGT", left, " ", p.peekToken, "\n")
+	switch p.peekToken.Type {
+	case token.LT, token.LTEQ, token.GT, token.GTEQ:
+	default:
+		return p.parseAddSubExpressionWithLeft(left)
+	}
+	p.nextToken()
+	ie := &ast.InfixExpression{
+		Token: p.curToken,
+		Left: left,
+		Operator: p.curToken.Literal,
+	}
+	p.nextToken()
+	ie.Right = p.parseAddSubExpressionWithLeft(p.parsePrefixExpression())
+	return p.parseLTGTExpressionWithLeft(ie)
+}
+
+func (p *Parser) parseAddSubExpressionWithLeft(left ast.Expression) ast.Expression {
+	fmt.Print("    AddSub", left, " ", p.peekToken, "\n")
+	switch p.peekToken.Type {
+	case token.PLUS, token.MINUS:
+	default:
+		return p.parseMulDivExpressionWithLeft(left)
+	}
+	p.nextToken()
+	ie := &ast.InfixExpression{
+		Token: p.curToken,
+		Left: left,
+		Operator: p.curToken.Literal,
+	}
+	p.nextToken()
+	ie.Right = p.parseMulDivExpressionWithLeft(p.parsePrefixExpression())
+	return p.parseAddSubExpressionWithLeft(ie)
+}
+
+func (p *Parser) parseMulDivExpressionWithLeft(left ast.Expression) ast.Expression {
+	fmt.Print("      MulDiv", left, " ", p.peekToken, "\n")
+	switch p.peekToken.Type {
+	case token.STAR, token.SLASH:
+	default:
+		return left
+	}
+	p.nextToken()
+	ie := &ast.InfixExpression{Token: p.curToken}
+	ie.Left = left
+	ie.Operator = p.curToken.Literal
+	p.nextToken()
+	ie.Right = p.parseLiteralAndIdentify()
+	return p.parseMulDivExpressionWithLeft(ie)
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
+	fmt.Print("        Prefix", p.peekToken, "\n")
 	switch p.curToken.Type {
 	case token.PLUS, token.MINUS:
 	default:
