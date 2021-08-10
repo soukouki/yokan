@@ -121,12 +121,12 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"a * b * c", "((a * b) * c)"},
 		{"a * +b / c", "((a * (+b)) / c)"},
 		{"a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"},
-		//{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
-		//{"5 <= 4 != 3 >= 4", "((5 <= 4) != (3 <= 4))"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 <= 4 != 3 >= 4", "((5 <= 4) != (3 <= 4))"},
 		{"1 == 2", "(1 == 2)"},
 
-		//{"z == a * b + c", "(z == ((a * b) + c))"},
-		//{"z == a + b * c", "(z == (a + (b * c)))"},
+		{"z == a * b + c", "(z == ((a * b) + c))"},
+		{"z == a + b * c", "(z == (a + (b * c)))"},
 	}
 
 	for _, tt := range tests {
@@ -205,8 +205,8 @@ func checkCommonTestsAndParse(t *testing.T, input string, neededStmt int) *ast.P
 	checkParseErrors(t, p)
 
 	if len(program.Statements) != neededStmt {
-		t.Fatalf("program.Statements does not contain %d statements. got=%d",
-			neededStmt, len(program.Statements))
+		t.Fatalf("program.Statements does not contain %d statements. got=%d, %q",
+			neededStmt, len(program.Statements), program.Statements)
 	}
 
 	return program
