@@ -32,7 +32,7 @@ func (p *Parser) Errors() []string {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead",
+	msg := fmt.Sprintf("expected next token to be '%s', got '%s' instead",
 		t, p.peekToken.Type)
 	p.appendError(msg)
 }
@@ -176,6 +176,21 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		pe.Right = p.parsePrefixExpression()
 		return pe
 	} else {
+		return p.parseFunctionCalling()
+	}
+}
+
+func (p *Parser) parseFunctionCalling() ast.Expression {
+	if p.curTokenIs(token.IDENT) && p.peekTokenIs(token.LPAREN) { // IDENT以外のパターンもあるので、なんか考える
+		fc := &ast.FunctionCalling{
+			Token: p.curToken,
+			Function: p.parseLiteralAndIdentify(),
+		}
+		p.nextToken()
+		p.nextToken()
+		fc.Arguments = p.parseCommaSeparatedExpressions(token.RPAREN)
+		return fc
+	} else {
 		return p.parseLiteralAndIdentify()
 	}
 }
@@ -198,32 +213,40 @@ func (p *Parser) parseLiteralAndIdentify() ast.Expression {
 func (p *Parser) parseArrayLiteral() *ast.ArrayLiteral {
 	tok := p.curToken
 	p.nextToken()
+	list := p.parseCommaSeparatedExpressions(token.RBRACK)
+	return &ast.ArrayLiteral{Token: tok, Value: list}
+}
+
+func (p *Parser) parseCommaSeparatedExpressions(endToken token.TokenType) []ast.Expression {
 	var list []ast.Expression
+	if p.curTokenIs(endToken) {
+		p.nextToken()
+		empty := []ast.Expression { }
+		return empty
+	}
 	for {
-		if p.peekTokenIs(token.RBRACK) {
-			empty := []ast.Expression { }
-			list = append(list, &ast.ArrayLiteral{Token: p.curToken, Value: empty})
-			p.nextToken()
+		expr := p.parseExpression()
+		p.nextToken()
+		if expr==nil {
 			break
 		}
-		expr := p.parseExpression()
 		list = append(list, expr)
 		// , ...
 		// ]
 		// , ]
-		if p.peekTokenIs(token.RBRACK) {
+		if p.curTokenIs(endToken) {
 			p.nextToken()
 			break
 		}
-		if p.expectPeek(token.COMMA) {
+		if p.curTokenIs(token.COMMA) {
 			p.nextToken()
-			if p.curTokenIs(token.RBRACK) {
+			if p.curTokenIs(endToken) {
+				p.nextToken()
 				break
 			}
 		}
 	}
-	p.nextToken()
-	return &ast.ArrayLiteral{Token: tok, Value: list}
+	return list
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {

@@ -72,7 +72,7 @@ func TestInfixExpressions(t *testing.T) {
 		expr := checkCommonTestsAndParseExpression(t, tt.input)
 		ie, ok := expr.(*ast.InfixExpression)
 		if !ok {
-			t.Fatalf("stmt is not ast.InfixExpression. got %T", expr)
+			t.Fatalf("expr is not ast.InfixExpression. got %T", expr)
 		}
 		if !checkIntegerLiteral(t, ie.Left, tt.left) {
 			return
@@ -158,6 +158,37 @@ func checkExpressionsInString(t *testing.T, tests []testInString) {
 	}
 }
 
+func TestFunctionCalling(t *testing.T) {
+	input := "add(x,2)"
+	
+	expr := checkCommonTestsAndParseExpression(t, input)
+	
+	calling, ok := expr.(*ast.FunctionCalling)
+	if !ok {
+		t.Fatalf("expr not *FunctionCalling. got=%T", expr)
+	}
+	function, ok := calling.Function.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("calling.Function not *ast.Identifier. got=%T", calling.Function)
+	}
+	if function.Value != "add" {
+		t.Fatalf("function.Value not 'add'. got='%s'", function.Value)
+	}
+	args := calling.Arguments
+	if len(args) != 2 {
+		t.Fatalf("len(args) not 2. got=%d", len(args))
+	}
+	first_argument, ok := args[0].(*ast.Identifier)
+	if !ok {
+		t.Fatalf("args[0] not *ast.Identifier. got=%T", args[0])
+	}
+	if first_argument.Value != "x" {
+		t.Fatalf("first_argument.Value not 'x'. got='%s'", first_argument.Value)
+	}
+	second_argument, ok := args[1].(*ast.IntegerLiteral)
+	checkIntegerLiteral(t, second_argument, 2)
+}
+
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "11"
 
@@ -175,7 +206,7 @@ func TestStringLiteralExpression(t *testing.T) {
 }
 
 func TestArrayLiteralExperession(t *testing.T) {
-	input := `[12, "aa", [33, [], ]]`
+	input := `[12, "bb", [33, [], ]]`
 
 	expr := checkCommonTestsAndParseExpression(t, input)
 
@@ -187,7 +218,7 @@ func TestArrayLiteralExperession(t *testing.T) {
 		t.Fatalf("len(array.Value) not 3. got=%d", len(array.Value))
 	}
 	checkIntegerLiteral(t, array.Value[0], 12)
-	checkStringLiteral(t, array.Value[1], "aa")
+	checkStringLiteral(t, array.Value[1], "bb")
 	
 	innerArray, ok := array.Value[2].(*ast.ArrayLiteral)
 	if !ok {

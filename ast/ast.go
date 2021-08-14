@@ -138,6 +138,35 @@ func (i *InfixExpression) String() string {
 }
 
 
+// 関数呼び出し
+
+type FunctionCalling struct {
+	Token token.Token
+	Function Expression
+	Arguments []Expression
+}
+
+func (fc *FunctionCalling) expressionNode() { }
+func (fc *FunctionCalling) TokenLiteral() string {
+	return fc.Token.Literal
+}
+
+func (fc *FunctionCalling) String() string {
+	var out bytes.Buffer
+	out.WriteString(fc.Function.String())
+	out.WriteString("(")
+	len := len(fc.Arguments)
+	for i, e := range fc.Arguments {
+		out.WriteString(e.String())
+		if i != len {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString(")")
+	return out.String()
+}
+
+
 // 配列
 
 type ArrayLiteral struct {
@@ -209,6 +238,7 @@ func (sl *StringLiteral) expressionNode() { }
 func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }
+
 func (sl *StringLiteral) String() string {
 	str0 := sl.Value
 	str1 := strings.Replace(str0, "\\", `\\`, -1)
