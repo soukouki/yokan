@@ -40,19 +40,4 @@ const (
 	RBRACE  = "}"
 	LBRACK  = "["
 	RBRACK  = "]"
-
-	// キーワード
-	FUNC   = "FUNCTION"
-	RETURN = "RETURN"
-	WHILE  = "WHILE"
-	IF     = "IF"
-	ELSE   = "ELSE"
 )
-
-var Keywords = map[string]TokenType {
-	"func"  : FUNC,
-	"return": RETURN,
-	"while" : WHILE,
-	"if"    : IF,
-	"else"  : ELSE,
-}

@@ -126,13 +126,7 @@ func (l *Lexer) NextToken() token.Token {
 		if isDigit(l.ch) {
 			return token.Token{Type: token.INT, Literal: l.readDigits()}
 		} else if isLetter(l.ch) {
-			literal := l.readIdentifier()
-			tokenType, isExist := token.Keywords[literal]
-			if isExist {
-				return token.Token{Type: tokenType, Literal: literal}
-			} else {
-				return token.Token{Type: token.IDENT, Literal: literal}	
-			}
+			return token.Token{Type: token.IDENT, Literal: l.readIdentifier()}
 		}
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
