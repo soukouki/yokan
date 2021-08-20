@@ -33,7 +33,7 @@ func TestEvalStringExpression(t *testing.T) {
 	}
 }
 
-func TestPrefixExpressions(t *testing.T) {
+func TestEvalPrefixExpressions(t *testing.T) {
 	tests := []struct {
 		input string
 		expected int64
@@ -59,6 +59,33 @@ func TestPrefixExpressionsTypeError(t *testing.T) {
 		t.Errorf("err.Type() is not 'ERROR. got='%s'", err.Type())
 	}
 }
+
+func TestEvalInfixIntegerExpressions(t *testing.T) {
+	tests := []struct {
+		input string
+		expected int64
+	} {
+		{"1+2", 3},
+		{"3-4", -1},
+		{"5*6", 30},
+		{"7/8", 0},
+	}
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		testIntegerObject(t, evaled, tt.expected)
+	}
+}
+
+func TestZeroDivisionError(t *testing.T) {
+	evaled := testEval("1/0")
+	_, ok := evaled.(*object.OtherError)
+	if !ok {
+		t.Errorf("evaled is not *object.OtherError. got=%T", evaled)
+	}
+	// メッセージのチェックはとりあえずしない
+}
+
+// TODO: 比較
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
