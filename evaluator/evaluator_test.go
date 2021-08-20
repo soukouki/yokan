@@ -22,6 +22,22 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
+func TestPrefixExpressions(t *testing.T) {
+	tests := []struct {
+		input string
+		expected int64
+	} {
+		{"+12", 12},
+		{"-34", -34},
+		{"-+-+56", 56},
+	}
+
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		testIntegerObject(t, evaled, tt.expected)
+	}
+}
+
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
