@@ -150,7 +150,7 @@ func (p *Parser) parseAddSubExpression() ast.Expression {
 }
 
 func (p *Parser) parseMulDivExpression() ast.Expression {
-	expr := p.parseFunctionLiteral()
+	expr := p.parsePrefixExpression()
 	for p.peekTokenIs(token.STAR) || p.peekTokenIs(token.SLASH) {
 		p.nextToken()
 		newExpr := &ast.InfixExpression{
@@ -159,10 +159,37 @@ func (p *Parser) parseMulDivExpression() ast.Expression {
 			Operator: p.curToken.Literal,
 		}
 		p.nextToken()
-		newExpr.Right = p.parseFunctionLiteral()
+		newExpr.Right = p.parsePrefixExpression()
 		expr = newExpr
 	}
 	return expr
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	if !( p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) ) {
+		return p.parseFunctionCalling()
+	}
+	pe := &ast.PrefixExpression{Token: p.curToken}
+	pe.Operator = p.curToken.Literal
+	p.nextToken()
+	pe.Right = p.parsePrefixExpression()
+	return pe
+}
+
+func (p *Parser) parseFunctionCalling() ast.Expression {
+	expr := p.parseFunctionLiteral()
+	if !p.peekTokenIs(token.LPAREN) {
+		return expr
+	}
+	p.nextToken()
+	fc := &ast.FunctionCalling{
+		Token: p.curToken,
+		Function: expr,
+	}
+	p.nextToken()
+	fc.Arguments = p.parseCommaSeparatedExpressions(token.RPAREN)
+	
+	return fc
 }
 
 func (p *Parser) parseFunctionLiteral() ast.Expression {
@@ -182,45 +209,18 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	p.nextToken()
 	p.nextToken()
 	stmts := p.parseStatements()
-	p.nextToken()
 	return &ast.FunctionLiteral{Token: token, Arguments: args, Body: stmts}
 }
 
 func (p *Parser) parseParenthesisExpression() ast.Expression {
 	if !p.curTokenIs(token.LPAREN) {
-		return p.parsePrefixExpression()
+		return p.parseLiteralAndIdentify()
 	}
 
 	p.nextToken()
 	expr := p.parseExpression()
 	p.expectPeek(token.RPAREN)
 	return expr
-}
-
-func (p *Parser) parsePrefixExpression() ast.Expression {
-	if !( p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) ) {
-		return p.parseFunctionCalling()
-	}
-	pe := &ast.PrefixExpression{Token: p.curToken}
-	pe.Operator = p.curToken.Literal
-	p.nextToken()
-	pe.Right = p.parsePrefixExpression()
-	return pe
-}
-
-func (p *Parser) parseFunctionCalling() ast.Expression {
-	if p.curTokenIs(token.IDENT) && p.peekTokenIs(token.LPAREN) { // IDENT以外のパターンもあるので、なんか考える
-		fc := &ast.FunctionCalling{
-			Token: p.curToken,
-			Function: p.parseLiteralAndIdentify(),
-		}
-		p.nextToken()
-		p.nextToken()
-		fc.Arguments = p.parseCommaSeparatedExpressions(token.RPAREN)
-		return fc
-	} else {
-		return p.parseLiteralAndIdentify()
-	}
 }
 
 func (p *Parser) parseLiteralAndIdentify() ast.Expression {
@@ -248,7 +248,6 @@ func (p *Parser) parseArrayLiteral() *ast.ArrayLiteral {
 func (p *Parser) parseCommaSeparatedIdentifiers() []ast.Identifier {
 	var list []ast.Identifier
 	if !p.curTokenIs(token.IDENT){
-		p.nextToken()
 		empty := []ast.Identifier { }
 		return empty
 	}

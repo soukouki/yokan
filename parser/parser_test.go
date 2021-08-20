@@ -158,6 +158,7 @@ func checkExpressionsInString(t *testing.T, tests []testInString) {
 func TestFunctionCalling(t *testing.T) {
 	input := "add(x,2)"
 	
+	fmt.Println("---------------------------")
 	expr := checkCommonTestsAndParseExpression(t, input)
 	
 	calling, ok := expr.(*ast.FunctionCalling)
@@ -167,7 +168,7 @@ func TestFunctionCalling(t *testing.T) {
 	checkIdentifier(t, calling.Function, "add")
 	args := calling.Arguments
 	if len(args) != 2 {
-		t.Fatalf("len(args) not 2. got=%d", len(args))
+		t.Fatalf("len(args) not 2. got=%q", args)
 	}
 	checkIdentifier(t, args[0], "x")
 	checkIntegerLiteral(t, args[1], 2)
@@ -202,7 +203,25 @@ func TestFunctionLiteral(t *testing.T) {
 }
 
 func TestFunctionLiteralWithCalling(t *testing.T) {
-	// input := "(a){}(c)"
+	input := "(){}()"
+
+	fmt.Println("**********************")
+	expr := checkCommonTestsAndParseExpression(t, input)
+
+	call, ok := expr.(*ast.FunctionCalling)
+	if !ok {
+		t.Fatalf("expr not *ast.FunctionCalling. got=%T", expr)
+	}
+	fun, ok := call.Function.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("call.Function not *ast.FunctionLiteral. got=%T", call.Function)
+	}
+	if len(fun.Arguments) != 0 {
+		t.Fatalf("len(fun.Arguments) not 0. got=%d", len(fun.Arguments))
+	}
+	if len(fun.Body) != 0 {
+		t.Fatalf("len(fun.Body) not 0. got=%d", len(fun.Body))
+	}
 }
 
 // リテラルのテスト

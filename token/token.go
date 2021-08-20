@@ -30,7 +30,6 @@ const (
 	GT     = ">"
 	GTEQ   = ">="
 
-
 	// デミリタ
 	NEWLINE = "\n"
 	COMMA   = ","
