@@ -19,6 +19,8 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	}
 	return &object.OtherError{Msg: "Not yet implemented"}
 }

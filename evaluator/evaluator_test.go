@@ -22,6 +22,17 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
+func TestEvalStringExpression(t *testing.T) {
+	evaled := testEval(`"a\n\t\"b"`)
+	str, ok := evaled.(*object.String)
+	if !ok {
+		t.Errorf("evaled is not object.String. got=%T", evaled)
+	}
+	if str.Value != "a\n\t\"b" {
+		t.Errorf(`str.Value is not "a\n\t\"b". got='%s'`, str)
+	}
+}
+
 func TestPrefixExpressions(t *testing.T) {
 	tests := []struct {
 		input string

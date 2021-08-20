@@ -1,9 +1,9 @@
 package ast
 
 import (
-	"yokan/token"
 	"bytes"
-	"strings"
+	"yokan/utility"
+	"yokan/token"
 )
 
 type Node interface {
@@ -273,10 +273,5 @@ func (sl *StringLiteral) TokenLiteral() string {
 }
 
 func (sl *StringLiteral) String() string {
-	str0 := sl.Value
-	str1 := strings.Replace(str0, "\\", `\\`, -1)
-	str2 := strings.Replace(str1, "\n", `\n`, -1)
-	str3 := strings.Replace(str2, "\t", `\t`, -1)
-	str4 := strings.Replace(str3, "\"", `\"`, -1)
-	return `"`+str4+`"`
+	return utility.Quote(sl.Value)
 }
