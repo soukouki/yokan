@@ -64,15 +64,14 @@ func (es *ExpressionStatement) String() string {
 }
 
 
-// 代入
+// 代入(文)
 
 type Assign struct {
-	Token token.Token
-	Name *Identifier
+	Name Identifier
 	Value Expression
 }
 
-func (as *Assign) expressionNode() { }
+func (as *Assign) statementNode() { }
 func (as *Assign) TokenLiteral() string {
 	return ""
 }
@@ -190,6 +189,40 @@ func (a *ArrayLiteral) String() string {
 		}
 	}
 	out.WriteString("]")
+	return out.String()
+}
+
+
+// 関数リテラル
+
+type FunctionLiteral struct {
+	Token token.Token
+	Arguments []Identifier
+	Body []Statement
+}
+
+func (f *FunctionLiteral) expressionNode() { }
+func (f *FunctionLiteral) TokenLiteral() string {
+	return f.Token.Literal
+}
+
+func (f *FunctionLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	identLen := len(f.Arguments)
+	for i, ident := range f.Arguments {
+		out.WriteString(ident.String())
+		if i != identLen {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString(")\n{\n")
+	for _, stmt := range f.Body {
+		out.WriteString("\t")
+		out.WriteString(stmt.String())
+		out.WriteString("\n")
+	}
+	out.WriteString("}")
 	return out.String()
 }
 

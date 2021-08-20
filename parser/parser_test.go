@@ -7,6 +7,9 @@ import (
 	"yokan/lexer"
 )
 
+
+// 文のテスト
+
 func TestAssignStatement(t *testing.T) {
 	input := "aaa = \"bbb\"\nccc = 1 + 2 == ddd"
 
@@ -28,26 +31,20 @@ func TestAssignStatement(t *testing.T) {
 	}
 }
 
-func checkAssignStatement(t *testing.T, s ast.Statement, name string, expected string) bool {
-	exprStmt, ok := s.(*ast.ExpressionStatement)
-	assign := exprStmt.Expression.(*ast.Assign)
+func checkAssignStatement(t *testing.T, stmt ast.Statement, name string, expected string) bool {
+	assign, ok := stmt.(*ast.Assign)
 	if !ok {
-		t.Errorf("s not *ast.AssignStatement. got=%T", s)
+		t.Errorf("stmt not *ast.Assign. got=%T", stmt)
 		return false
 	}
-	if assign.Name.Value != name {
-		t.Errorf("assign.Name.Value not '%s'. got=%s", name, assign.Name.Value)
-		return false
-	}
-	if assign.Name.TokenLiteral() != name {
-		t.Errorf("assign.Name.TokenLiteral() not '%s'. got=%s", name, assign.Name.TokenLiteral())
-		return false
-	}
+	checkIdentifier(t, &assign.Name, expected)
 	if assign.Value.String() != expected {
 		t.Errorf("assign.Value.String() not '%s'. got %s", expected, assign.Value.String())
 	}
 	return true
 }
+
+// 式のテスト
 
 func TestInfixExpressions(t *testing.T) {
 	infixTests := []struct {
@@ -165,29 +162,50 @@ func TestFunctionCalling(t *testing.T) {
 	
 	calling, ok := expr.(*ast.FunctionCalling)
 	if !ok {
-		t.Fatalf("expr not *FunctionCalling. got=%T", expr)
+		t.Fatalf("expr not *ast.FunctionCalling. got=%T", expr)
 	}
-	function, ok := calling.Function.(*ast.Identifier)
-	if !ok {
-		t.Fatalf("calling.Function not *ast.Identifier. got=%T", calling.Function)
-	}
-	if function.Value != "add" {
-		t.Fatalf("function.Value not 'add'. got='%s'", function.Value)
-	}
+	checkIdentifier(t, calling.Function, "add")
 	args := calling.Arguments
 	if len(args) != 2 {
 		t.Fatalf("len(args) not 2. got=%d", len(args))
 	}
-	first_argument, ok := args[0].(*ast.Identifier)
-	if !ok {
-		t.Fatalf("args[0] not *ast.Identifier. got=%T", args[0])
-	}
-	if first_argument.Value != "x" {
-		t.Fatalf("first_argument.Value not 'x'. got='%s'", first_argument.Value)
-	}
-	second_argument, ok := args[1].(*ast.IntegerLiteral)
-	checkIntegerLiteral(t, second_argument, 2)
+	checkIdentifier(t, args[0], "x")
+	checkIntegerLiteral(t, args[1], 2)
 }
+
+func TestFunctionLiteral(t *testing.T) {
+	input := "(aa,bb,){\ncc=44\nee\n}"
+
+	expr := checkCommonTestsAndParseExpression(t, input)
+
+	fun, ok := expr.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("expr not *ast.FunctionLiteral. got=%T", expr)
+	}
+	args := fun.Arguments
+	if len(args) != 2 {
+		t.Fatalf("len(args) not 2. got=%d", len(args))
+	}
+	checkIdentifier(t, &args[0], "a")
+	checkIdentifier(t, &args[1], "b")
+	first_stmt, ok := fun.Body[0].(*ast.Assign)
+	if !ok {
+		t.Fatalf("fun.Body[0] not *ast.Assign. got=%T", fun.Body[0])
+	}
+	checkIdentifier(t, &first_stmt.Name, "cc")
+	checkIntegerLiteral(t, first_stmt.Value, 44)
+	second_stmt, ok := fun.Body[1].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("fun.Body[1] not *ast.ExpressionStatement. got=%T", fun.Body[1])
+	}
+	checkIdentifier(t, second_stmt.Expression, "ee")
+}
+
+func TestFunctionLiteralWithCalling(t *testing.T) {
+	// input := "(a){}(c)"
+}
+
+// リテラルのテスト
 
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "11"
@@ -238,22 +256,12 @@ func TestArrayLiteralExperession(t *testing.T) {
 	}
 }
 
-func checkCommonTestsAndParseExpression(t *testing.T, input string) ast.Expression {
-	program := checkCommonTestsAndParse(t, input, 1)
+// リテラルと識別子のチェック
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+func checkIntegerLiteral(t *testing.T, exp ast.Expression, value int64) bool {
+	integ, ok := exp.(*ast.IntegerLiteral)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
-			program.Statements[0])
-	}
-
-	return stmt.Expression
-}
-
-func checkIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
-	integ, ok := il.(*ast.IntegerLiteral)
-	if !ok {
-		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
+		t.Errorf("exp not *ast.IntegerLiteral. got=%T", exp)
 		return false
 	}
 	if integ.Value != value {
@@ -267,10 +275,10 @@ func checkIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	return true
 }
 
-func checkStringLiteral(t *testing.T, sl ast.Expression, value string) bool {
-	literal, ok := sl.(*ast.StringLiteral)
+func checkStringLiteral(t *testing.T, exp ast.Expression, value string) bool {
+	literal, ok := exp.(*ast.StringLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.StringLiteral. got=%T", sl)
+		t.Fatalf("exp not *ast.StringLiteral. got=%T", exp)
 		return false
 	}
 	if literal.Value != value {
@@ -283,6 +291,37 @@ func checkStringLiteral(t *testing.T, sl ast.Expression, value string) bool {
 		return false
 	}
 	return true
+}
+
+func checkIdentifier(t *testing.T, exp ast.Expression, name string) bool {
+	ident, ok := exp.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("exp not *ast.Identifier. got=%T", exp)
+		return false
+	}
+	if ident.Value != name {
+		t.Fatalf("ident not '%s'. got='%s'", name, ident.Value)
+		return false
+	}
+	if ident.TokenLiteral() != name {
+		t.Fatalf("ident.TokenLiteral() not '%s'. got='%s'", name, ident.TokenLiteral())
+		return false
+	}
+	return true
+}
+
+// 式や文のテストに使う共通部分
+
+func checkCommonTestsAndParseExpression(t *testing.T, input string) ast.Expression {
+	program := checkCommonTestsAndParse(t, input, 1)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement, got=%T",
+			program.Statements[0])
+	}
+
+	return stmt.Expression
 }
 
 func checkCommonTestsAndParse(t *testing.T, input string, neededStmt int) *ast.Program {

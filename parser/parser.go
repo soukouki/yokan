@@ -61,15 +61,14 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
-func (p *Parser) parseStatement() *ast.ExpressionStatement {
+func (p *Parser) parseStatement() ast.Statement {
 	var expr ast.Expression
 	switch p.curToken.Type {
 	case token.NEWLINE:
 		return nil
 	case token.IDENT:
 		if p.peekTokenIs(token.ASSIGN) {
-			name := p.parseIdentifier()
-			expr = p.parseAssign(*name)
+			return p.parseAssign()
 		} else {
 			expr = p.parseExpression()
 		}
@@ -79,8 +78,8 @@ func (p *Parser) parseStatement() *ast.ExpressionStatement {
 	return &ast.ExpressionStatement{Expression: expr}
 }
 
-func (p *Parser) parseAssign(name ast.Identifier) *ast.Assign {
-	assign := &ast.Assign{Token: name.Token, Name: &name}
+func (p *Parser) parseAssign() *ast.Assign {
+	assign := &ast.Assign{Name: *p.parseIdentifier()}
 	p.nextToken()
 	p.nextToken()
 	assign.Value = p.parseExpression()
