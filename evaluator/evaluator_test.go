@@ -38,10 +38,21 @@ func TestPrefixExpressions(t *testing.T) {
 	}
 }
 
+func TestPrefixExpressionsTypeError(t *testing.T) {
+	evaled := testEval(`+""`)
+	err, ok := evaled.(*object.TypeMisMatchError)
+	if !ok {
+		t.Errorf("evaled is not *object.TypeMisMatchError. got=%T", evaled)
+	}
+	if err.Type() != "ERROR" {
+		t.Errorf("err.Type() is not 'ERROR. got='%s'", err.Type())
+	}
+}
+
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
-		t.Errorf("obj is not Integer. got=%T", obj)
+		t.Errorf("obj is not *Integer. got=%T", obj)
 		return false
 	}
 	if result.Value != expected {

@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+
 	"yokan/ast"
 	"yokan/object"
 )
@@ -18,7 +20,7 @@ func Eval(node ast.Node) object.Object {
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 	}
-	return nil
+	return &object.OtherError{Msg: "Not yet implemented"}
 }
 
 func evalStatements(stmts []ast.Statement) object.Object {
@@ -36,20 +38,20 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return nil // TODO: エラーを返したい
+		return &object.OtherError{Msg: fmt.Sprintf("Invalid operator '%s' in PrefixExpression.", operator)}
 	}
 }
 
 func evalPlusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return nil // TODO: エラーを返したい
+		return &object.TypeMisMatchError{Name: "PlusPrefixOperator", Wants: "INTEGER", Got: right}
 	}
 	return right
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return nil // TODO: エラーを返したい
+		return &object.TypeMisMatchError{Name: "MinusPrefixOperator", Wants: "INTEGER", Got: right}
 	}
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
