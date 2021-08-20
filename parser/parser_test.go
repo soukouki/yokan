@@ -37,7 +37,7 @@ func checkAssignStatement(t *testing.T, stmt ast.Statement, name string, expecte
 		t.Errorf("stmt not *ast.Assign. got=%T", stmt)
 		return false
 	}
-	checkIdentifier(t, &assign.Name, expected)
+	checkIdentifier(t, &assign.Name, name)
 	if assign.Value.String() != expected {
 		t.Errorf("assign.Value.String() not '%s'. got %s", expected, assign.Value.String())
 	}
@@ -184,10 +184,10 @@ func TestFunctionLiteral(t *testing.T) {
 	}
 	args := fun.Arguments
 	if len(args) != 2 {
-		t.Fatalf("len(args) not 2. got=%d", len(args))
+		t.Fatalf("len(args) not 2. got=%q", args)
 	}
-	checkIdentifier(t, &args[0], "a")
-	checkIdentifier(t, &args[1], "b")
+	checkIdentifier(t, &args[0], "aa")
+	checkIdentifier(t, &args[1], "bb")
 	first_stmt, ok := fun.Body[0].(*ast.Assign)
 	if !ok {
 		t.Fatalf("fun.Body[0] not *ast.Assign. got=%T", fun.Body[0])

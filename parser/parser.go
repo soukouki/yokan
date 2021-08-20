@@ -14,6 +14,8 @@ type Parser struct {
 
 	curToken  token.Token
 	peekToken token.Token
+	peek2Token token.Token
+	peek3Token token.Token
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -21,6 +23,8 @@ func New(l *lexer.Lexer) *Parser {
 		l: l,
 		errors: []string {},
 	}
+	p.nextToken()
+	p.nextToken()
 	p.nextToken()
 	p.nextToken()
 
@@ -43,22 +47,27 @@ func (p *Parser) appendError(msg string) {
 
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
-	p.peekToken = p.l.NextToken()
+	p.peekToken = p.peek2Token
+	p.peek2Token = p.peek3Token
+	p.peek3Token = p.l.NextToken()
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
-	program.Statements = []ast.Statement{}
+	program.Statements = p.parseStatements()
+	return program
+}
 
-	for p.curToken.Type != token.EOF {
+func (p *Parser) parseStatements() []ast.Statement {
+	var list []ast.Statement
+	for !p.curTokenIs(token.EOF) && !p.curTokenIs(token.RBRACE) {
 		stmt := p.parseStatement()
 		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
+			list = append(list, stmt)
 		}
 		p.nextToken()
 	}
-
-	return program
+	return list
 }
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -141,7 +150,7 @@ func (p *Parser) parseAddSubExpression() ast.Expression {
 }
 
 func (p *Parser) parseMulDivExpression() ast.Expression {
-	expr := p.parseParenthesisExpression()
+	expr := p.parseFunctionLiteral()
 	for p.peekTokenIs(token.STAR) || p.peekTokenIs(token.SLASH) {
 		p.nextToken()
 		newExpr := &ast.InfixExpression{
@@ -150,33 +159,53 @@ func (p *Parser) parseMulDivExpression() ast.Expression {
 			Operator: p.curToken.Literal,
 		}
 		p.nextToken()
-		newExpr.Right = p.parseParenthesisExpression()
+		newExpr.Right = p.parseFunctionLiteral()
 		expr = newExpr
 	}
 	return expr
 }
 
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	// (){ ... }
+	// (a){ ... }
+	//  (a, b){ ... } のようなコードを想定(カンマは式の中には出てこないのと、関数リテラルのカッコ内は識別子だけなのを用いる)
+	if !(
+		p.curTokenIs(token.LPAREN) && p.peekTokenIs(token.RPAREN) && p.peek2TokenIs(token.LBRACE) ||
+		p.curTokenIs(token.LPAREN) && p.peekTokenIs(token.IDENT) && p.peek2TokenIs(token.RPAREN) && p.peek3TokenIs(token.LBRACE) ||
+		p.curTokenIs(token.LPAREN) && p.peekTokenIs(token.IDENT) && p.peek2TokenIs(token.COMMA) ) {
+		return p.parseParenthesisExpression()
+	}
+
+	token := p.curToken
+	p.nextToken()
+	args := p.parseCommaSeparatedIdentifiers()
+	p.nextToken()
+	p.nextToken()
+	stmts := p.parseStatements()
+	p.nextToken()
+	return &ast.FunctionLiteral{Token: token, Arguments: args, Body: stmts}
+}
+
 func (p *Parser) parseParenthesisExpression() ast.Expression {
-	if p.curTokenIs(token.LPAREN) {
-		p.nextToken()
-		expr := p.parseExpression()
-		p.expectPeek(token.RPAREN)
-		return expr
-	} else {
+	if !p.curTokenIs(token.LPAREN) {
 		return p.parsePrefixExpression()
 	}
+
+	p.nextToken()
+	expr := p.parseExpression()
+	p.expectPeek(token.RPAREN)
+	return expr
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	if p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) {
-		pe := &ast.PrefixExpression{Token: p.curToken}
-		pe.Operator = p.curToken.Literal
-		p.nextToken()
-		pe.Right = p.parsePrefixExpression()
-		return pe
-	} else {
+	if !( p.curTokenIs(token.PLUS) || p.curTokenIs(token.MINUS) ) {
 		return p.parseFunctionCalling()
 	}
+	pe := &ast.PrefixExpression{Token: p.curToken}
+	pe.Operator = p.curToken.Literal
+	p.nextToken()
+	pe.Right = p.parsePrefixExpression()
+	return pe
 }
 
 func (p *Parser) parseFunctionCalling() ast.Expression {
@@ -214,6 +243,26 @@ func (p *Parser) parseArrayLiteral() *ast.ArrayLiteral {
 	p.nextToken()
 	list := p.parseCommaSeparatedExpressions(token.RBRACK)
 	return &ast.ArrayLiteral{Token: tok, Value: list}
+}
+
+func (p *Parser) parseCommaSeparatedIdentifiers() []ast.Identifier {
+	var list []ast.Identifier
+	if !p.curTokenIs(token.IDENT){
+		p.nextToken()
+		empty := []ast.Identifier { }
+		return empty
+	}
+	for p.curTokenIs(token.IDENT) {
+		ident := p.parseIdentifier()
+		if ident == nil {
+			msg := fmt.Sprintf("could not parse %q as identifier", p.curToken.Literal)
+			p.appendError(msg)
+		}
+		p.nextToken()
+		p.nextToken()
+		list = append(list, *ident)
+	}
+	return list
 }
 
 func (p *Parser) parseCommaSeparatedExpressions(endToken token.TokenType) []ast.Expression {
@@ -281,6 +330,14 @@ func (p *Parser) curTokenIs(t token.TokenType) bool {
 
 func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
+}
+
+func (p *Parser) peek2TokenIs(t token.TokenType) bool {
+	return p.peek2Token.Type == t
+}
+
+func (p *Parser) peek3TokenIs(t token.TokenType) bool {
+	return p.peek3Token.Type == t
 }
 
 func (p *Parser) expectPeek(t token.TokenType) bool {
