@@ -73,6 +73,14 @@ func evalInfixExpression(left object.Object, operator string, right object.Objec
 		return evalEqInfixOperatorExpression(left, right)
 	case "!=":
 		return evalNotEqInfixOperatorExpression(left, right)
+	case "<":
+		return evalLTInfixOperatorExpression(left, right)
+	case "<=":
+		return evalLTEQInfixOperatorExpression(left, right)
+	case ">":
+		return evalGTInfixOperatorExpression(left, right)
+	case ">=":
+		return evalGTEQInfixOperatorExpression(left, right)
 	default:
 		return &object.OtherError{Msg: fmt.Sprintf("Invalid operator '%s' in InfixExpression.", operator)}
 	}
@@ -182,7 +190,46 @@ func evalEqInfixOperatorExpression(left object.Object, right object.Object) obje
 }
 
 func evalNotEqInfixOperatorExpression(left object.Object, right object.Object) object.Object {
-	obj := evalEqInfixOperatorExpression(left, right)
+	return not(evalEqInfixOperatorExpression(left, right))
+}
+
+func evalLTInfixOperatorExpression(left object.Object, right object.Object) object.Object {
+	{
+		err, ok := checkTypeIsInteger("LTInfixOperator", left)
+		if !ok { return err }
+	}
+	{
+		err, ok := checkTypeIsInteger("LTInfixOperator", right)
+		if !ok { return err }
+	}
+	l := left.(*object.Integer).Value
+	r := right.(*object.Integer).Value
+	return &object.Boolean{Value: l<r} 
+}
+
+func evalLTEQInfixOperatorExpression(left object.Object, right object.Object) object.Object {
+	{
+		err, ok := checkTypeIsInteger("LTInfixOperator", left)
+		if !ok { return err }
+	}
+	{
+		err, ok := checkTypeIsInteger("LTInfixOperator", right)
+		if !ok { return err }
+	}
+	l := left.(*object.Integer).Value
+	r := right.(*object.Integer).Value
+	return &object.Boolean{Value: l<=r} 
+}
+
+func evalGTInfixOperatorExpression(left object.Object, right object.Object) object.Object {
+	return not(evalLTEQInfixOperatorExpression(left, right))
+}
+
+func evalGTEQInfixOperatorExpression(left object.Object, right object.Object) object.Object {
+	return not(evalLTInfixOperatorExpression(left, right))
+}
+
+func not(obj object.Object) object.Object {
 	if obj.Type() == object.BOOLEAN_OBJ {
 		return &object.Boolean{Value: !obj.(*object.Boolean).Value}
 	} else {
