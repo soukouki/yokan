@@ -15,9 +15,15 @@ func Eval(node ast.Node) object.Object {
 		return Eval(node.Expression)
 	
 	case *ast.PrefixExpression:
-		return evalPrefixExpression(node.Operator, Eval(node.Right))
+		right := Eval(node.Right)
+		if isError(right) { return right }
+		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		return evalInfixExpression(Eval(node.Left), node.Operator, Eval(node.Right))
+		left := Eval(node.Left)
+		if isError(left) { return left }
+		right := Eval(node.Right)
+		if isError(right) { return right }
+		return evalInfixExpression(left, node.Operator, right)
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -31,6 +37,9 @@ func evalStatements(stmts []ast.Statement) object.Object {
 	var result object.Object
 	for _, stmt := range stmts {
 		result = Eval(stmt)
+		if isError(result) {
+			return result
+		}
 	}
 	return result
 }
@@ -243,4 +252,8 @@ func contains(target object.ObjectType, types []object.ObjectType) bool {
 		ret = ret || target == t
 	}
 	return ret
+}
+
+func isError(obj object.Object) bool {
+	return obj.Type() == object.ERROR_OBJ
 }

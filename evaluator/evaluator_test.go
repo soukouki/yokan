@@ -141,6 +141,7 @@ func TestTypeMisMatchError(t *testing.T) {
 		`"a" < 1`, `"a" <= 1`, `"a" > 1`, `"a" >= 1`,
 		"1 < (1==1)", "1 <= (1==1)", "1 > (1==1)", "1 >= (1==1)",
 		"(1==1) < 1", "(1==1) <= 1", "(1==1) > 1", "(1==1) >= 1",
+		"1+(1==1)\n123",
 	}
 	for _, input := range tests {
 		evaled := testEval(input)
