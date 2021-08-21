@@ -152,6 +152,19 @@ func TestTypeMisMatchError(t *testing.T) {
 	}
 }
 
+func TestOtherError(t *testing.T) {
+	tests := []string {
+		"1 / 0",
+	}
+	for _, input := range tests {
+		evaled := testEval(input)
+		_, ok := evaled.(*object.OtherError)
+		if !ok {
+			t.Errorf("evaled is not *object.Error. got=%T", evaled)
+		}
+	}
+}
+
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
