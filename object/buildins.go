@@ -11,7 +11,11 @@ var Buildins = map[string]Object{
 	"puts": &Buildin{
 		Fn: func(args ...Object) Object {
 			for _, arg := range args {
-				fmt.Println(arg.String())
+				if arg.Type() == STRING_OBJ {
+					fmt.Print(arg.(*String).Value)
+				} else {
+					fmt.Println(arg.String())
+				}
 			}
 			return &Null{ }
 		},
