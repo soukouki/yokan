@@ -123,7 +123,7 @@ fizzbuzz(15)
 ```js
 remainder=(n,d){n-(n/d)*d}
 
-fizzbuzzi=(n){
+fizzbuzzii=(n){
 	if(
 		remainder(n,15)==0,
 		(){puts("fizzbuzz\n")},
