@@ -76,13 +76,47 @@ func TestEvalInfixIntegerExpressions(t *testing.T) {
 	}
 }
 
-func TestZeroDivisionError(t *testing.T) {
-	evaled := testEval("1/0")
-	_, ok := evaled.(*object.OtherError)
+func TestFunction(t *testing.T) {
+	evaled := testEval("f0=(){}\n f0()")
+	_, ok := evaled.(*object.Null)
 	if !ok {
-		t.Errorf("evaled is not *object.OtherError. got=%T", evaled)
+		t.Errorf("evaled is not *object.Null. got=%T", evaled)
 	}
-	// メッセージのチェックはとりあえずしない
+
+	tests := []struct {
+		input string
+		expected int64 // とりあえずint64でテストすることにする
+	} {
+		{"f1=(){12}\n f1()", 12},
+		{"val=34\n f2=(){val}\n f2()", 34},
+		{"val=56\n f3=(){val=78}\n f3()\n val", 56},
+		{"(){90}()", 90},
+		{"val=12\n (){val=34}\n val", 12},
+		{"f4=(a){a}\n f4(90)", 900},
+		{"f5=(a,b){a+b}\n f5(1,2)", 3},
+		{"f6=(a){(b){a+b}}\n f6(4)(5)", 9},
+		{"f6=(a){(b){a+b}}\n f7=f6(6)\n f7(7)", 13},
+		{"val=12\n f8=(){val}\n val=34\n f8()", 34},
+		{"val=12\n f9=(val){}\n f9(34)\n val", 12},
+	}
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		testIntegerObject(t, evaled, tt.expected)
+	}
+}
+
+func TestOtherError(t *testing.T) {
+	tests := []string {
+		"1 / 0",
+		"ab = 2\n abc",
+	}
+	for _, input := range tests {
+		evaled := testEval(input)
+		_, ok := evaled.(*object.OtherError)
+		if !ok {
+			t.Errorf("evaled is not *object.Error. got=%T", evaled)
+		}
+	}
 }
 
 func TestEvalInfixComparingExpressions(t *testing.T) {
@@ -129,9 +163,8 @@ func TestEvalInfixComparingExpressions(t *testing.T) {
 	}
 }
 
+// 違うものすべてと比較するのは大変な割に得られるものが少ないので、とりあえずこのくらいにしておく
 func TestTypeMisMatchError(t *testing.T) {
-	// エラーとの比較はとりあえずおいておく
-	// TODO: 関数型との比較
 	tests := []string {
 		`1 + "a"`, `1 - "a"`, `1 * "a"`, `1 / "a"`,
 		`"a" + 1`, `"a" - 1`, `"a" * 1`, `"a" / 1`,
@@ -152,19 +185,6 @@ func TestTypeMisMatchError(t *testing.T) {
 	}
 }
 
-func TestOtherError(t *testing.T) {
-	tests := []string {
-		"1 / 0",
-	}
-	for _, input := range tests {
-		evaled := testEval(input)
-		_, ok := evaled.(*object.OtherError)
-		if !ok {
-			t.Errorf("evaled is not *object.Error. got=%T", evaled)
-		}
-	}
-}
-
 func TestAssign(t *testing.T) {
 	tests := []struct {
 		input string
@@ -180,18 +200,10 @@ func TestAssign(t *testing.T) {
 	}
 }
 
-func TestUnboundedVariableError(t *testing.T) {
-	evaled := testEval("ab = 2\n abc")
-	_, ok := evaled.(*object.UnboundedVariableError)
-	if !ok {
-		t.Errorf("evaled is not *object.UnboundedVariableError. got=%T", evaled)
-	}
-}
-
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
-		t.Errorf("obj is not *object.Integer. got=%T(%s)", obj, obj.Inspect())
+		t.Errorf("obj is not *object.Integer. got=%T(%s) (want=%d)", obj, obj.Inspect(), expected)
 		return false
 	}
 	if result.Value != expected {

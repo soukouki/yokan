@@ -207,23 +207,15 @@ func (f *FunctionLiteral) TokenLiteral() string {
 }
 
 func (f *FunctionLiteral) String() string {
-	var out bytes.Buffer
-	out.WriteString("(")
-	identLen := len(f.Arguments)
-	for i, ident := range f.Arguments {
-		out.WriteString(ident.String())
-		if i != identLen {
-			out.WriteString(", ")
-		}
+	var args []string
+	for _, a := range f.Arguments {
+		args = append(args, a.Name)
 	}
-	out.WriteString(")\n{\n")
-	for _, stmt := range f.Body {
-		out.WriteString("\t")
-		out.WriteString(stmt.String())
-		out.WriteString("\n")
+	var body []string
+	for _, b := range f.Body {
+		body = append(body, b.String())
 	}
-	out.WriteString("}")
-	return out.String()
+	return utility.FunctionString(args, body)
 }
 
 

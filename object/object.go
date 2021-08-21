@@ -2,15 +2,19 @@ package object
 
 import (
 	"fmt"
+	"yokan/ast"
 	"yokan/utility"
 )
 
 type ObjectType string
 
 const (
+	FUNCTION_OBJ = "FUNCTION"
+
 	INTEGER_OBJ = "INTEGER"
 	STRING_OBJ = "STRING"
 	BOOLEAN_OBJ = "BOOLEAN"
+	NULL_OBJ = "NULL"
 	
 	ERROR_OBJ = "ERROR"
 	SHOULD_NOT_VIEWABLE_OBJ = "SHOULD_NOT_VIEWABLE"
@@ -19,6 +23,28 @@ const (
 type Object interface {
 	Type() ObjectType
 	Inspect() string
+}
+
+
+type Function struct {
+	Parameters []ast.Identifier
+	Body []ast.Statement
+	// 実行時じゃなくて定義時の環境を持たないといけないので、Functionが環境を保つ必要がある
+	Env *Environment
+}
+func (f *Function) Inspect() string {
+	var param []string
+	for _, p := range f.Parameters {
+		param = append(param, p.Name)
+	}
+	var body []string
+	for _, b := range f.Body {
+		body = append(body, b.String())
+	}
+	return utility.FunctionString(param, body)
+}
+func (f *Function) Type() ObjectType {
+	return FUNCTION_OBJ
 }
 
 
@@ -58,6 +84,13 @@ func (b *Boolean) Type() ObjectType {
 	return BOOLEAN_OBJ
 }
 
+type Null struct { }
+func (n *Null) Inspect() string {
+	return "null"
+}
+func (n *Null) Type() ObjectType {
+	return NULL_OBJ
+}
 
 // エラー
 
@@ -76,17 +109,6 @@ func (e *TypeMisMatchError) Inspect() string {
 	return fmt.Sprintf("%s Expected %s but got '%s'", e.Name, e.Expected, e.Got.Type())
 }
 func (e *TypeMisMatchError) Type() ObjectType {
-	return ERROR_OBJ
-}
-
-type UnboundedVariableError struct {
-	Name string
-}
-func (e *UnboundedVariableError) ErrorObject() { }
-func (e *UnboundedVariableError) Inspect() string {
-	return fmt.Sprintf("%s is unbouded variable", e.Name)
-}
-func (e *UnboundedVariableError) Type() ObjectType {
 	return ERROR_OBJ
 }
 

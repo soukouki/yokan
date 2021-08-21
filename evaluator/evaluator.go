@@ -17,6 +17,15 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Assign:
 		return evalAssign(*node, env)
 	
+	case *ast.FunctionLiteral:
+		return &object.Function{Parameters: node.Arguments, Body: node.Body, Env: env}
+	case *ast.FunctionCalling:
+		function := Eval(node.Function, env)
+		if isError(function) { return function }
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) { return args[0] }
+		return applyFunction(function, args)
+	
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) { return right }
@@ -30,7 +39,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Identifier:
 		name := node.Name
 		val, ok := env.Get(name)
-		if !ok { return &object.UnboundedVariableError{Name: name} }
+		if !ok { return &object.OtherError{Msg: fmt.Sprintf("%s is unbouded variable", name)} }
 		return val
 
 	case *ast.IntegerLiteral:
@@ -38,11 +47,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 	}
-	return &object.OtherError{Msg: "Not yet implemented"}
+	return &object.OtherError{Msg: fmt.Sprintf("%T is not yet implemented", node)}
 }
 
 func evalStatements(stmts []ast.Statement, env *object.Environment) object.Object {
-	var result object.Object
+	var result object.Object = &object.Null{ } 
 	for _, stmt := range stmts {
 		result = Eval(stmt, env)
 		if isError(result) {
@@ -57,6 +66,40 @@ func evalAssign(assign ast.Assign, env *object.Environment) object.Object {
 	if isError(val) { return val }
 	env.Set(assign.Name.Name, val)
 	return &object.ReturnValueOsStatement{ }
+}
+
+func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
+	var result []object.Object
+	for _, e := range exps {
+		evaled := Eval(e, env)
+		if isError(evaled) { return []object.Object{evaled} }
+		result = append(result, evaled)
+	}
+	return result
+}
+
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		return &object.OtherError {
+			Msg: fmt.Sprintf("%s(%s) is not a function", fn.Type(), fn.Inspect()),
+		}
+	}
+	if len(function.Parameters) != len(args) {
+		return &object.OtherError {
+			Msg: fmt.Sprintf("Function need %d params, but got %d params", len(function.Parameters), len(args)),
+		}
+	}
+	inheritEnv := inheritFunctionEnv(function, args)
+	return evalStatements(function.Body, inheritEnv)
+}
+
+func inheritFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
+	env := object.NewInferitEnvironment(fn.Env)
+	for paramIdx, param := range fn.Parameters {
+		env.Set(param.Name, args[paramIdx])
+	}
+	return env
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
@@ -94,6 +137,7 @@ func evalInfixExpression(left object.Object, operator string, right object.Objec
 	case "/":
 		return evalSlashInfixOperatorExpression(left, right)
 	case "==":
+
 		return evalEqInfixOperatorExpression(left, right)
 	case "!=":
 		return evalNotEqInfixOperatorExpression(left, right)
