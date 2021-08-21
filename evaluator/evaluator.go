@@ -79,20 +79,23 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-	function, ok := fn.(*object.Function)
-	if !ok {
+	switch fn := fn.(type) {
+	case *object.Function:
+		if len(fn.Parameters) != len(args) {
+			return &object.OtherError {
+				Msg: fmt.Sprintf("Function need %d params, but got %d params", len(fn.Parameters), len(args)),
+			}
+		}
+		inheritEnv := inheritFunctionEnv(fn, args)
+		a := evalStatements(fn.Body, inheritEnv)
+		return a
+	case *object.Buildin:
+		return fn.Fn(args...)
+	default:
 		return &object.OtherError {
 			Msg: fmt.Sprintf("%s(%s) is not a function", fn.Type(), fn.String()),
 		}
 	}
-	if len(function.Parameters) != len(args) {
-		return &object.OtherError {
-			Msg: fmt.Sprintf("Function need %d params, but got %d params", len(function.Parameters), len(args)),
-		}
-	}
-	inheritEnv := inheritFunctionEnv(function, args)
-	a := evalStatements(function.Body, inheritEnv)
-	return a
 }
 
 func inheritFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {

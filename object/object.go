@@ -10,6 +10,7 @@ type ObjectType string
 
 const (
 	FUNCTION_OBJ = "FUNCTION"
+	BUILDIN_OBJ = "BUILDIN"
 
 	INTEGER_OBJ = "INTEGER"
 	STRING_OBJ = "STRING"
@@ -45,6 +46,18 @@ func (f *Function) String() string {
 }
 func (f *Function) Type() ObjectType {
 	return FUNCTION_OBJ
+}
+
+type BuildinFunction func(args ...Object) Object
+
+type Buildin struct {
+	Fn BuildinFunction
+}
+func (b *Buildin) String() string {
+	return "<buildin function>"
+}
+func (b *Buildin) Type() ObjectType {
+	return BUILDIN_OBJ
 }
 
 

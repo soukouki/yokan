@@ -105,20 +105,6 @@ func TestFunction(t *testing.T) {
 	}
 }
 
-func TestOtherError(t *testing.T) {
-	tests := []string {
-		"1 / 0",
-		"ab = 2\n abc",
-	}
-	for _, input := range tests {
-		evaled := testEval(input)
-		_, ok := evaled.(*object.OtherError)
-		if !ok {
-			t.Errorf("evaled is not *object.Error. got=%T", evaled)
-		}
-	}
-}
-
 func TestEvalInfixComparingExpressions(t *testing.T) {
 	tests := []struct {
 		input string
@@ -197,6 +183,44 @@ func TestAssign(t *testing.T) {
 	}
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestBuildinValues(t *testing.T) {
+	tests := []struct {
+		input string
+		expected interface{}
+	} {
+		{"true", true},
+		{"false", false},
+		{"null", nil},
+		{"puts()", nil},
+	}
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case bool:
+			testBooleanObject(t, evaled, expected)
+		case nil:
+			_, ok := evaled.(*object.Null)
+			if !ok {
+				t.Errorf("evaled is not *object.Null. got=%T(%s)", evaled, evaled.String())
+			}
+		}
+	}
+}
+
+func TestOtherError(t *testing.T) {
+	tests := []string {
+		"1 / 0",
+		"ab = 2\n abc",
+	}
+	for _, input := range tests {
+		evaled := testEval(input)
+		_, ok := evaled.(*object.OtherError)
+		if !ok {
+			t.Errorf("evaled is not *object.Error. got=%T", evaled)
+		}
 	}
 }
 

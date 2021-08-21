@@ -1,14 +1,14 @@
 package object
 
 func NewEnvironment() *Environment {
-	s := make(map[string]Object)
-	return &Environment{store: s, parent: nil}
+	return &Environment{store: Buildins, parent: nil}
 }
 
 func NewInferitEnvironment(parent *Environment) *Environment {
-	env := NewEnvironment()
-	env.parent = parent
-	return env
+	return &Environment{
+		store: make(map[string]Object),
+		parent: parent,
+	}
 }
 
 
