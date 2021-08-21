@@ -254,7 +254,7 @@ func (p *Parser) parseCommaSeparatedIdentifiers() []ast.Identifier {
 	for p.curTokenIs(token.IDENT) {
 		ident := p.parseIdentifier()
 		if ident == nil {
-			msg := fmt.Sprintf("could not parse %q as identifier", p.curToken.Literal)
+			msg := fmt.Sprintf("could is not parse %q as identifier", p.curToken.Literal)
 			p.appendError(msg)
 		}
 		p.nextToken()
@@ -301,7 +301,7 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		msg := fmt.Sprintf("could is not parse %q as integer", p.curToken.Literal)
 		p.appendError(msg)
 		return nil
 	}

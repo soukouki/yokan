@@ -34,12 +34,12 @@ func TestAssignStatement(t *testing.T) {
 func checkAssignStatement(t *testing.T, stmt ast.Statement, name string, expected string) bool {
 	assign, ok := stmt.(*ast.Assign)
 	if !ok {
-		t.Errorf("stmt not *ast.Assign. got=%T", stmt)
+		t.Errorf("stmt is not *ast.Assign. got=%T", stmt)
 		return false
 	}
 	checkIdentifier(t, &assign.Name, name)
 	if assign.Value.String() != expected {
-		t.Errorf("assign.Value.String() not '%s'. got %s", expected, assign.Value.String())
+		t.Errorf("assign.Value.String() is not '%s'. got %s", expected, assign.Value.String())
 	}
 	return true
 }
@@ -163,12 +163,12 @@ func TestFunctionCalling(t *testing.T) {
 	
 	calling, ok := expr.(*ast.FunctionCalling)
 	if !ok {
-		t.Fatalf("expr not *ast.FunctionCalling. got=%T", expr)
+		t.Fatalf("expr is not *ast.FunctionCalling. got=%T", expr)
 	}
 	checkIdentifier(t, calling.Function, "add")
 	args := calling.Arguments
 	if len(args) != 2 {
-		t.Fatalf("len(args) not 2. got=%q", args)
+		t.Fatalf("len(args) is not 2. got=%q", args)
 	}
 	checkIdentifier(t, args[0], "x")
 	checkIntegerLiteral(t, args[1], 2)
@@ -181,23 +181,23 @@ func TestFunctionLiteral(t *testing.T) {
 
 	fun, ok := expr.(*ast.FunctionLiteral)
 	if !ok {
-		t.Fatalf("expr not *ast.FunctionLiteral. got=%T", expr)
+		t.Fatalf("expr is not *ast.FunctionLiteral. got=%T", expr)
 	}
 	args := fun.Arguments
 	if len(args) != 2 {
-		t.Fatalf("len(args) not 2. got=%q", args)
+		t.Fatalf("len(args) is not 2. got=%q", args)
 	}
 	checkIdentifier(t, &args[0], "aa")
 	checkIdentifier(t, &args[1], "bb")
 	first_stmt, ok := fun.Body[0].(*ast.Assign)
 	if !ok {
-		t.Fatalf("fun.Body[0] not *ast.Assign. got=%T", fun.Body[0])
+		t.Fatalf("fun.Body[0] is not *ast.Assign. got=%T", fun.Body[0])
 	}
 	checkIdentifier(t, &first_stmt.Name, "cc")
 	checkIntegerLiteral(t, first_stmt.Value, 44)
 	second_stmt, ok := fun.Body[1].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("fun.Body[1] not *ast.ExpressionStatement. got=%T", fun.Body[1])
+		t.Fatalf("fun.Body[1] is not *ast.ExpressionStatement. got=%T", fun.Body[1])
 	}
 	checkIdentifier(t, second_stmt.Expression, "ee")
 }
@@ -210,17 +210,17 @@ func TestFunctionLiteralWithCalling(t *testing.T) {
 
 	call, ok := expr.(*ast.FunctionCalling)
 	if !ok {
-		t.Fatalf("expr not *ast.FunctionCalling. got=%T", expr)
+		t.Fatalf("expr is not *ast.FunctionCalling. got=%T", expr)
 	}
 	fun, ok := call.Function.(*ast.FunctionLiteral)
 	if !ok {
-		t.Fatalf("call.Function not *ast.FunctionLiteral. got=%T", call.Function)
+		t.Fatalf("call.Function is not *ast.FunctionLiteral. got=%T", call.Function)
 	}
 	if len(fun.Arguments) != 0 {
-		t.Fatalf("len(fun.Arguments) not 0. got=%d", len(fun.Arguments))
+		t.Fatalf("len(fun.Arguments) is not 0. got=%d", len(fun.Arguments))
 	}
 	if len(fun.Body) != 0 {
-		t.Fatalf("len(fun.Body) not 0. got=%d", len(fun.Body))
+		t.Fatalf("len(fun.Body) is not 0. got=%d", len(fun.Body))
 	}
 }
 
@@ -249,29 +249,29 @@ func TestArrayLiteralExperession(t *testing.T) {
 
 	array, ok := expr.(*ast.ArrayLiteral)
 	if !ok {
-		t.Fatalf("array not *ast.ArrayLiteral. got=%T", array)
+		t.Fatalf("array is not *ast.ArrayLiteral. got=%T", array)
 	}
 	if len(array.Value) != 3 {
-		t.Fatalf("len(array.Value) not 3. got=%d", len(array.Value))
+		t.Fatalf("len(array.Value) is not 3. got=%d", len(array.Value))
 	}
 	checkIntegerLiteral(t, array.Value[0], 12)
 	checkStringLiteral(t, array.Value[1], "bb")
 	
 	innerArray, ok := array.Value[2].(*ast.ArrayLiteral)
 	if !ok {
-		t.Fatalf("innerArray not *ast.ArrayLiteral. got=%T", innerArray)
+		t.Fatalf("innerArray is not *ast.ArrayLiteral. got=%T", innerArray)
 	}
 	if len(innerArray.Value) != 2 {
-		t.Fatalf("len(innerArray.Value) not 2. got=%d", len(array.Value))
+		t.Fatalf("len(innerArray.Value) is not 2. got=%d", len(array.Value))
 	}
 	checkIntegerLiteral(t, innerArray.Value[0], 33)
 
 	innerInnerArray, ok := innerArray.Value[1].(*ast.ArrayLiteral)
 	if !ok {
-		t.Fatalf("innerInnerArray not *ast.ArrayLiteral. got=%T", innerInnerArray)
+		t.Fatalf("innerInnerArray is not *ast.ArrayLiteral. got=%T", innerInnerArray)
 	}
 	if len(innerInnerArray.Value) != 0 {
-		t.Fatalf("len(innerArray.Value) not 0. got=%d", len(innerInnerArray.Value))
+		t.Fatalf("len(innerArray.Value) is not 0. got=%d", len(innerInnerArray.Value))
 	}
 }
 
@@ -280,15 +280,15 @@ func TestArrayLiteralExperession(t *testing.T) {
 func checkIntegerLiteral(t *testing.T, exp ast.Expression, value int64) bool {
 	integ, ok := exp.(*ast.IntegerLiteral)
 	if !ok {
-		t.Errorf("exp not *ast.IntegerLiteral. got=%T", exp)
+		t.Errorf("exp is not *ast.IntegerLiteral. got=%T", exp)
 		return false
 	}
 	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		t.Errorf("integ.Value is not %d. got=%d", value, integ.Value)
 		return false
 	}
 	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
-		t.Errorf("integ.TokenLiteral not %d. got %s", value, integ.TokenLiteral())
+		t.Errorf("integ.TokenLiteral is not %d. got %s", value, integ.TokenLiteral())
 		return false
 	}
 	return true
@@ -297,15 +297,15 @@ func checkIntegerLiteral(t *testing.T, exp ast.Expression, value int64) bool {
 func checkStringLiteral(t *testing.T, exp ast.Expression, value string) bool {
 	literal, ok := exp.(*ast.StringLiteral)
 	if !ok {
-		t.Fatalf("exp not *ast.StringLiteral. got=%T", exp)
+		t.Fatalf("exp is not *ast.StringLiteral. got=%T", exp)
 		return false
 	}
 	if literal.Value != value {
-		t.Fatalf("Literal.Value not %s. got=%s", value, literal.Value)
+		t.Fatalf("Literal.Value is not %s. got=%s", value, literal.Value)
 		return false
 	}
 	if literal.TokenLiteral() != value {
-		t.Fatalf("literal.TokenLiteral not %s. got %s",
+		t.Fatalf("literal.TokenLiteral is not %s. got %s",
 			value, literal.TokenLiteral())
 		return false
 	}
@@ -315,15 +315,15 @@ func checkStringLiteral(t *testing.T, exp ast.Expression, value string) bool {
 func checkIdentifier(t *testing.T, exp ast.Expression, name string) bool {
 	ident, ok := exp.(*ast.Identifier)
 	if !ok {
-		t.Fatalf("exp not *ast.Identifier. got=%T", exp)
+		t.Fatalf("exp is not *ast.Identifier. got=%T", exp)
 		return false
 	}
 	if ident.Value != name {
-		t.Fatalf("ident not '%s'. got='%s'", name, ident.Value)
+		t.Fatalf("ident is not '%s'. got='%s'", name, ident.Value)
 		return false
 	}
 	if ident.TokenLiteral() != name {
-		t.Fatalf("ident.TokenLiteral() not '%s'. got='%s'", name, ident.TokenLiteral())
+		t.Fatalf("ident.TokenLiteral() is not '%s'. got='%s'", name, ident.TokenLiteral())
 		return false
 	}
 	return true
@@ -354,7 +354,7 @@ func checkCommonTestsAndParse(t *testing.T, input string, neededStmt int) *ast.P
 	checkParseErrors(t, p)
 
 	if len(program.Statements) != neededStmt {
-		t.Fatalf("program.Statements does not contain %d statements. got=%d, %q",
+		t.Fatalf("program.Statements does is not contain %d statements. got=%d, %q",
 			neededStmt, len(program.Statements), program.Statements)
 	}
 
