@@ -10,6 +10,8 @@ type ObjectType string
 const (
 	INTEGER_OBJ = "INTEGER"
 	STRING_OBJ = "STRING"
+	BOOLEAN_OBJ = "BOOLEAN"
+	
 	ERROR_OBJ = "ERROR"
 )
 
@@ -41,6 +43,20 @@ func (s *String) Type() ObjectType {
 	return STRING_OBJ
 }
 
+type Boolean struct {
+	Value bool
+}
+func (b *Boolean) Inspect() string {
+	if b.Value {
+		return "true"
+	} else {
+		return "false"
+	}
+}
+func (b *Boolean) Type() ObjectType {
+	return BOOLEAN_OBJ
+}
+
 
 // エラー
 
@@ -51,12 +67,12 @@ type Error interface {
 
 type TypeMisMatchError struct {
 	Name string
-	Wants string
+	Expected string
 	Got Object
 }
 func (e *TypeMisMatchError) ErrorObject() { }
 func (e *TypeMisMatchError) Inspect() string {
-	return fmt.Sprintf("%s wants %s but got '%s'", e.Name, e.Wants, e.Got.Type())
+	return fmt.Sprintf("%s Expected %s but got '%s'", e.Name, e.Expected, e.Got.Type())
 }
 func (e *TypeMisMatchError) Type() ObjectType {
 	return ERROR_OBJ

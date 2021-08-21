@@ -85,16 +85,67 @@ func TestZeroDivisionError(t *testing.T) {
 	// メッセージのチェックはとりあえずしない
 }
 
-// TODO: 比較
+func TestEvalInfixComparingExpressions(t *testing.T) {
+	tests := []struct {
+		input string
+		expected bool
+	} {
+		{"1 == 1", true},
+		{"1 == 2", false},
+		{"1 != 1", false},
+		{"1 != 2", true},
+		{`"a" == "a"`, true},
+		{`"a" == "b"`, false},
+		{`"a" != "a"`, false},
+		{`"a" != "b"`, true},
+		{"(1==1) == (1==1)", true},
+		{"(1==1) == (1!=1)", false},
+		{"(1==1) != (1==1)", false},
+		{"(1==1) != (1!=1)", true},
+		{`1 == "a"`, false},
+		{`1 != "a"`, true},
+		{"1 == (1==1)", false},
+		{"1 != (1==1)", true},
+		{"1 < 2", true},
+		{"4 < 3", false},
+		{"1 < 1", false},
+		{"1 <= 2", true},
+		{"4 <= 3", false},
+		{"1 <= 1", true},
+		{"1 > 2", false},
+		{"4 > 3", true},
+		{"1 > 1", false},
+		{"1 >= 2", false},
+		{"4 >= 3", true},
+		{"1 >= 1", true},
+	}
+	for _, tt := range tests {
+		evaled := testEval(tt.input)
+		testBooleanObject(t, evaled, tt.expected)
+	}
+}
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
-		t.Errorf("obj is not *Integer. got=%T", obj)
+		t.Errorf("obj is not *object.Integer. got=%T(%s)", obj, obj.Inspect())
 		return false
 	}
 	if result.Value != expected {
 		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
+		return false
+	}
+	return true
+}
+
+func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
+	result, ok := obj.(*object.Boolean)
+	if !ok {
+		t.Errorf("obj is not object.Boolean. got=%T(%s)", obj, obj.Inspect())
+		return false
+	}
+	if result.Value != expected {
+		t.Errorf("object has wrong value. got=%t, want=%t", result.Value, expected)
 		return false
 	}
 	return true
