@@ -268,7 +268,6 @@ func (p *Parser) parseCommaSeparatedIdentifiers() []ast.Identifier {
 func (p *Parser) parseCommaSeparatedExpressions(endToken token.TokenType) []ast.Expression {
 	var list []ast.Expression
 	if p.curTokenIs(endToken) {
-		p.nextToken()
 		empty := []ast.Expression { }
 		return empty
 	}

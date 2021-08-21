@@ -271,6 +271,17 @@ func TestFunctionLiteralWithCalling2(t *testing.T) {
 	}
 }
 
+func TestFunctionLiteralWithCalling3(t *testing.T) {
+	input := "(){ffff()}\n 123"
+
+	exprs := checkCommonTestsAndParse(t, input, 2)
+	expr, ok := exprs.Statements[1].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("exprs.Statements[1] is not *ast.ExpressionStatement. got=%T", exprs.Statements[1])
+	}
+	checkIntegerLiteral(t, expr.Expression, 123)
+}
+
 // リテラルのテスト
 
 func TestIntegerLiteralExpression(t *testing.T) {

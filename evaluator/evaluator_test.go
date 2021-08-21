@@ -195,10 +195,15 @@ func TestBuildinValues(t *testing.T) {
 		{"false", false},
 		{"null", nil},
 		{"puts()", nil},
+		{"if(true,12,34)", 12},
+		{"if(false,12,34)", 34},
+		{"f=(){ if(false, (){f()}, (){56})() }\n f()", 56},
 	}
 	for _, tt := range tests {
 		evaled := testEval(tt.input)
 		switch expected := tt.expected.(type) {
+		case int64:
+			testIntegerObject(t, evaled, expected)
 		case bool:
 			testBooleanObject(t, evaled, expected)
 		case nil:
