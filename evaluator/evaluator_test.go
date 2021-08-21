@@ -106,6 +106,10 @@ func TestEvalInfixComparingExpressions(t *testing.T) {
 		{`1 != "a"`, true},
 		{"1 == (1==1)", false},
 		{"1 != (1==1)", true},
+		{`"a" == 1`, false},
+		{`"a" != 1`, true},
+		{"(1==1) == 1", false},
+		{"(1==1) != 1", true},
 		{"1 < 2", true},
 		{"4 < 3", false},
 		{"1 < 1", false},
@@ -122,6 +126,28 @@ func TestEvalInfixComparingExpressions(t *testing.T) {
 	for _, tt := range tests {
 		evaled := testEval(tt.input)
 		testBooleanObject(t, evaled, tt.expected)
+	}
+}
+
+func TestTypeMisMatchError(t *testing.T) {
+	// エラーとの比較はとりあえずおいておく
+	// TODO: 関数型との比較
+	tests := []string {
+		`1 + "a"`, `1 - "a"`, `1 * "a"`, `1 / "a"`,
+		`"a" + 1`, `"a" - 1`, `"a" * 1`, `"a" / 1`,
+		"1 + (1==1)", "1 - (1==1)", "1 * (1==1)", "1 / (1==1)",
+		"(1==1) + 1", "(1==1) - 1", "(1==1) * 1", "(1==1) / 1",
+		`1 < "a"`, `1 <= "a"`, `1 > "a"`, `1 >= "a"`,
+		`"a" < 1`, `"a" <= 1`, `"a" > 1`, `"a" >= 1`,
+		"1 < (1==1)", "1 <= (1==1)", "1 > (1==1)", "1 >= (1==1)",
+		"(1==1) < 1", "(1==1) <= 1", "(1==1) > 1", "(1==1) >= 1",
+	}
+	for _, input := range tests {
+		evaled := testEval(input)
+		_, ok := evaled.(*object.TypeMisMatchError)
+		if !ok {
+			t.Errorf("evaled is not *object.TypeMisMatchError. got=%T", evaled)
+		}
 	}
 }
 
