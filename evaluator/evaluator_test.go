@@ -142,6 +142,8 @@ func TestEvalInfixComparingExpressions(t *testing.T) {
 		{"1 >= 2", false},
 		{"4 >= 3", true},
 		{"1 >= 1", true},
+		{"null == null", true},
+		{"null != null", false},
 	}
 	for _, tt := range tests {
 		evaled := testEval(tt.input)

@@ -228,8 +228,10 @@ var comparableInEqInfixOperatorTypes = []object.ObjectType {
 	object.INTEGER_OBJ,
 	object.STRING_OBJ,
 	object.BOOLEAN_OBJ,
+	object.NULL_OBJ,
 }
-var comparableInEqInfixOperatorTypesName = object.INTEGER_OBJ+", "+object.STRING_OBJ+", "+object.BOOLEAN_OBJ
+var comparableInEqInfixOperatorTypesName = 
+	object.INTEGER_OBJ+", "+object.STRING_OBJ+", "+object.BOOLEAN_OBJ+", "+object.NULL_OBJ
 
 func evalEqInfixOperatorExpression(left object.Object, right object.Object) object.Object {
 	if !contains(left.Type(), comparableInEqInfixOperatorTypes) {
@@ -255,7 +257,9 @@ func evalEqInfixOperatorExpression(left object.Object, right object.Object) obje
 		left.(*object.String).Value == right.(*object.String).Value ||
 		left.Type() == object.BOOLEAN_OBJ &&
 		right.Type() == object.BOOLEAN_OBJ &&
-		left.(*object.Boolean).Value == right.(*object.Boolean).Value) {
+		left.(*object.Boolean).Value == right.(*object.Boolean).Value ||
+		left.Type() == object.NULL_OBJ &&
+		right.Type() == object.NULL_OBJ ) {
 		return &object.Boolean{Value: true}
 	}
 	return &object.Boolean{Value: false}
