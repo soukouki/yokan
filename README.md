@@ -136,9 +136,9 @@ fizzbuzzi=(n){
 						remainder(n,5)==0,
 						(){puts("buzz\n")},
 						(){puts(n)}
-					)
+					)()
 				}
-			)
+			)()
 		}
 	)()
 }
