@@ -13,6 +13,7 @@ const (
 	BOOLEAN_OBJ = "BOOLEAN"
 	
 	ERROR_OBJ = "ERROR"
+	OTHER_OBJ = "OTHER"
 )
 
 type Object interface {
@@ -78,6 +79,17 @@ func (e *TypeMisMatchError) Type() ObjectType {
 	return ERROR_OBJ
 }
 
+type UnboundedVariableError struct {
+	Name string
+}
+func (e *UnboundedVariableError) ErrorObject() { }
+func (e *UnboundedVariableError) Inspect() string {
+	return fmt.Sprintf("%s is unbouded variable", e.Name)
+}
+func (e *UnboundedVariableError) Type() ObjectType {
+	return ERROR_OBJ
+}
+
 type OtherError struct {
 	Msg string
 }
@@ -87,4 +99,15 @@ func (e *OtherError) Inspect() string {
 }
 func (e *OtherError) Type() ObjectType {
 	return ERROR_OBJ
+}
+
+
+// 文の戻り値
+
+type ReturnValueOsStatement struct { }
+func (r *ReturnValueOsStatement) Inspect() string {
+	return "THIS VALUE MUST NOT VIEWABLE"
+}
+func (e *ReturnValueOsStatement) Type() ObjectType {
+	return OTHER_OBJ
 }

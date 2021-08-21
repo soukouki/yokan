@@ -319,7 +319,7 @@ func (p *Parser) parseStringLiteral() *ast.StringLiteral {
 func (p *Parser) parseIdentifier() *ast.Identifier {
 	return &ast.Identifier{
 		Token: p.curToken,
-		Value: p.curToken.Literal,
+		Name: p.curToken.Literal,
 	}
 }
 

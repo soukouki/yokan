@@ -318,8 +318,8 @@ func checkIdentifier(t *testing.T, exp ast.Expression, name string) bool {
 		t.Fatalf("exp is not *ast.Identifier. got=%T", exp)
 		return false
 	}
-	if ident.Value != name {
-		t.Fatalf("ident is not '%s'. got='%s'", name, ident.Value)
+	if ident.Name != name {
+		t.Fatalf("ident.Name is not '%s'. got='%s'", name, ident.Name)
 		return false
 	}
 	if ident.TokenLiteral() != name {

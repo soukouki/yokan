@@ -231,7 +231,7 @@ func (f *FunctionLiteral) String() string {
 
 type Identifier struct {
 	Token token.Token
-	Value string
+	Name string
 }
 
 func (i *Identifier) expressionNode() { }
@@ -240,7 +240,7 @@ func (i *Identifier) TokenLiteral() string {
 }
 
 func (i *Identifier) String() string {
-	return i.Value
+	return i.Name
 }
 
 

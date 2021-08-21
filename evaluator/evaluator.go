@@ -7,23 +7,31 @@ import (
 	"yokan/object"
 )
 
-func Eval(node ast.Node) object.Object {
+func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
-		return evalStatements(node.Statements)
+		return evalStatements(node.Statements, env)
+	
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression)
+		return Eval(node.Expression, env)
+	case *ast.Assign:
+		return evalAssign(*node, env)
 	
 	case *ast.PrefixExpression:
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) { return right }
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		left := Eval(node.Left)
+		left := Eval(node.Left, env)
 		if isError(left) { return left }
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) { return right }
 		return evalInfixExpression(left, node.Operator, right)
+	case *ast.Identifier:
+		name := node.Name
+		val, ok := env.Get(name)
+		if !ok { return &object.UnboundedVariableError{Name: name} }
+		return val
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -33,15 +41,22 @@ func Eval(node ast.Node) object.Object {
 	return &object.OtherError{Msg: "Not yet implemented"}
 }
 
-func evalStatements(stmts []ast.Statement) object.Object {
+func evalStatements(stmts []ast.Statement, env *object.Environment) object.Object {
 	var result object.Object
 	for _, stmt := range stmts {
-		result = Eval(stmt)
+		result = Eval(stmt, env)
 		if isError(result) {
 			return result
 		}
 	}
 	return result
+}
+
+func evalAssign(assign ast.Assign, env *object.Environment) object.Object {
+	val := Eval(assign.Value, env)
+	if isError(val) { return val }
+	env.Set(assign.Name.Name, val)
+	return &object.ReturnValueOsStatement{ }
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {

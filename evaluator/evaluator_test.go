@@ -165,6 +165,29 @@ func TestOtherError(t *testing.T) {
 	}
 }
 
+func TestAssign(t *testing.T) {
+	tests := []struct {
+		input string
+		expected int64 // とりあえずint64でテストすることにする
+	} {
+		{"a = 123\n a", 123},
+		{"a = 5*5\n a", 25},
+		{"a = 4\n b = a\n b", 4},
+		{"a = 3\n a = a*a\n a", 9},
+	}
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestUnboundedVariableError(t *testing.T) {
+	evaled := testEval("ab = 2\n abc")
+	_, ok := evaled.(*object.UnboundedVariableError)
+	if !ok {
+		t.Errorf("evaled is not *object.UnboundedVariableError. got=%T", evaled)
+	}
+}
+
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
@@ -195,5 +218,6 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	prog := p.ParseProgram()
-	return Eval(prog)
+	env := object.NewEnvironment()
+	return Eval(prog, env)
 }
