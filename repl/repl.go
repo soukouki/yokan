@@ -36,7 +36,9 @@ func Start(in io.Reader, out io.Writer) {
 
 		evalated := evaluator.Eval(program, env)
 		if evalated != nil {
-			io.WriteString(out, evalated.Inspect())
+			ret := evalated
+			if ret.Type() == object.SHOULD_NOT_VIEWABLE_OBJ { continue }
+			io.WriteString(out, ret.Inspect())
 			io.WriteString(out, "\n")
 		}
 	}

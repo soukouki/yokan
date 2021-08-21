@@ -13,7 +13,7 @@ const (
 	BOOLEAN_OBJ = "BOOLEAN"
 	
 	ERROR_OBJ = "ERROR"
-	OTHER_OBJ = "OTHER"
+	SHOULD_NOT_VIEWABLE_OBJ = "SHOULD_NOT_VIEWABLE"
 )
 
 type Object interface {
@@ -106,8 +106,8 @@ func (e *OtherError) Type() ObjectType {
 
 type ReturnValueOsStatement struct { }
 func (r *ReturnValueOsStatement) Inspect() string {
-	return "THIS VALUE MUST NOT VIEWABLE"
+	return "THIS VALUE SHOULD NOT VIEWABLE"
 }
 func (e *ReturnValueOsStatement) Type() ObjectType {
-	return OTHER_OBJ
+	return SHOULD_NOT_VIEWABLE_OBJ
 }
