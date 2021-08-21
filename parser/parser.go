@@ -178,18 +178,17 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 func (p *Parser) parseFunctionCalling() ast.Expression {
 	expr := p.parseFunctionLiteral()
-	if !p.peekTokenIs(token.LPAREN) {
-		return expr
+	for p.peekTokenIs(token.LPAREN) {
+		p.nextToken()
+		fc := &ast.FunctionCalling{
+			Token: p.curToken,
+			Function: expr,
+		}
+		p.nextToken()
+		fc.Arguments = p.parseCommaSeparatedExpressions(token.RPAREN)
+		expr = fc
 	}
-	p.nextToken()
-	fc := &ast.FunctionCalling{
-		Token: p.curToken,
-		Function: expr,
-	}
-	p.nextToken()
-	fc.Arguments = p.parseCommaSeparatedExpressions(token.RPAREN)
-	
-	return fc
+	return expr
 }
 
 func (p *Parser) parseFunctionLiteral() ast.Expression {
@@ -258,7 +257,9 @@ func (p *Parser) parseCommaSeparatedIdentifiers() []ast.Identifier {
 			p.appendError(msg)
 		}
 		p.nextToken()
-		p.nextToken()
+		if p.curTokenIs(token.COMMA) {
+			p.nextToken()
+		}
 		list = append(list, *ident)
 	}
 	return list
@@ -282,7 +283,6 @@ func (p *Parser) parseCommaSeparatedExpressions(endToken token.TokenType) []ast.
 		// ]
 		// , ]
 		if p.curTokenIs(endToken) {
-			p.nextToken()
 			break
 		}
 		if p.curTokenIs(token.COMMA) {

@@ -16,17 +16,18 @@ func Quote(str0 string) string {
 func FunctionString(args []string, body []string) string {
 	var out bytes.Buffer
 	out.WriteString("(")
-	identLen := len(args)
+	argsLen := len(args)
 	for i, name := range args {
 		out.WriteString(name)
-		if i != identLen {
+		if i+1 != argsLen {
 			out.WriteString(", ")
 		}
 	}
-	out.WriteString(")\n{\n")
+	out.WriteString(") {\n")
 	for _, stmt := range body {
+		tabStmt := strings.Replace(stmt, "\n", "\n\t", -1)
 		out.WriteString("\t")
-		out.WriteString(stmt)
+		out.WriteString(tabStmt)
 		out.WriteString("\n")
 	}
 	out.WriteString("}")

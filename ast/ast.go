@@ -157,7 +157,7 @@ func (fc *FunctionCalling) String() string {
 	len := len(fc.Arguments)
 	for i, e := range fc.Arguments {
 		out.WriteString(e.String())
-		if i != len {
+		if i+1 != len {
 			out.WriteString(", ")
 		}
 	}
@@ -184,7 +184,7 @@ func (a *ArrayLiteral) String() string {
 	len := len(a.Value)
 	for i, e := range a.Value {
 		out.WriteString(e.String())
-		if i != len {
+		if i+1 != len {
 			out.WriteString(", ")
 		}
 	}

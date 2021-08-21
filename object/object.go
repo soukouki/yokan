@@ -22,7 +22,7 @@ const (
 
 type Object interface {
 	Type() ObjectType
-	Inspect() string
+	String() string
 }
 
 
@@ -32,7 +32,7 @@ type Function struct {
 	// 実行時じゃなくて定義時の環境を持たないといけないので、Functionが環境を保つ必要がある
 	Env *Environment
 }
-func (f *Function) Inspect() string {
+func (f *Function) String() string {
 	var param []string
 	for _, p := range f.Parameters {
 		param = append(param, p.Name)
@@ -53,7 +53,7 @@ func (f *Function) Type() ObjectType {
 type Integer struct {
 	Value int64
 }
-func (i *Integer) Inspect() string {
+func (i *Integer) String() string {
 	return fmt.Sprintf("%d", i.Value)
 }
 func (i *Integer) Type() ObjectType {
@@ -63,7 +63,7 @@ func (i *Integer) Type() ObjectType {
 type String struct {
 	Value string
 }
-func (s *String) Inspect() string {
+func (s *String) String() string {
 	return utility.Quote(s.Value)
 }
 func (s *String) Type() ObjectType {
@@ -73,7 +73,7 @@ func (s *String) Type() ObjectType {
 type Boolean struct {
 	Value bool
 }
-func (b *Boolean) Inspect() string {
+func (b *Boolean) String() string {
 	if b.Value {
 		return "true"
 	} else {
@@ -85,7 +85,7 @@ func (b *Boolean) Type() ObjectType {
 }
 
 type Null struct { }
-func (n *Null) Inspect() string {
+func (n *Null) String() string {
 	return "null"
 }
 func (n *Null) Type() ObjectType {
@@ -105,7 +105,7 @@ type TypeMisMatchError struct {
 	Got Object
 }
 func (e *TypeMisMatchError) ErrorObject() { }
-func (e *TypeMisMatchError) Inspect() string {
+func (e *TypeMisMatchError) String() string {
 	return fmt.Sprintf("%s Expected %s but got '%s'", e.Name, e.Expected, e.Got.Type())
 }
 func (e *TypeMisMatchError) Type() ObjectType {
@@ -116,7 +116,7 @@ type OtherError struct {
 	Msg string
 }
 func (e *OtherError) ErrorObject() { }
-func (e *OtherError) Inspect() string {
+func (e *OtherError) String() string {
 	return e.Msg
 }
 func (e *OtherError) Type() ObjectType {
@@ -127,7 +127,7 @@ func (e *OtherError) Type() ObjectType {
 // 文の戻り値
 
 type ReturnValueOsStatement struct { }
-func (r *ReturnValueOsStatement) Inspect() string {
+func (r *ReturnValueOsStatement) String() string {
 	return "THIS VALUE SHOULD NOT VIEWABLE"
 }
 func (e *ReturnValueOsStatement) Type() ObjectType {

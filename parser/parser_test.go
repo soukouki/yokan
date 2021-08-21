@@ -158,7 +158,6 @@ func checkExpressionsInString(t *testing.T, tests []testInString) {
 func TestFunctionCalling(t *testing.T) {
 	input := "add(x,2)"
 	
-	fmt.Println("---------------------------")
 	expr := checkCommonTestsAndParseExpression(t, input)
 	
 	calling, ok := expr.(*ast.FunctionCalling)
@@ -172,6 +171,34 @@ func TestFunctionCalling(t *testing.T) {
 	}
 	checkIdentifier(t, args[0], "x")
 	checkIntegerLiteral(t, args[1], 2)
+}
+
+func TestFunctionCalling2(t *testing.T) {
+	input := "func(a)(b)"
+	
+	expr := checkCommonTestsAndParseExpression(t, input)
+	
+	outerCalling, ok := expr.(*ast.FunctionCalling)
+	if !ok {
+		t.Fatalf("expr is not *ast.FunctionCalling. got=%T", expr)
+	}
+	outerArgs := outerCalling.Arguments
+	if len(outerArgs) != 1 {
+		t.Fatalf("len(outerArgs) is not 1. got=%q", outerArgs)
+	}
+	checkIdentifier(t, outerArgs[0], "b")
+
+	innerCalling, ok := outerCalling.Function.(*ast.FunctionCalling)
+	if !ok {
+		t.Fatalf("innerCalling.Function is not *ast.FunctionCalling. got=%T", innerCalling.Function)
+	}
+	innerArgs := innerCalling.Arguments
+	if len(innerArgs) != 1 {
+		t.Fatalf("len(innerArgs) is not 1. got=%q", innerArgs)
+	}
+	checkIdentifier(t, innerArgs[0], "a")
+
+	checkIdentifier(t, innerCalling.Function, "func")
 }
 
 func TestFunctionLiteral(t *testing.T) {
@@ -205,7 +232,6 @@ func TestFunctionLiteral(t *testing.T) {
 func TestFunctionLiteralWithCalling(t *testing.T) {
 	input := "(){}()"
 
-	fmt.Println("**********************")
 	expr := checkCommonTestsAndParseExpression(t, input)
 
 	call, ok := expr.(*ast.FunctionCalling)
@@ -220,6 +246,27 @@ func TestFunctionLiteralWithCalling(t *testing.T) {
 		t.Fatalf("len(fun.Arguments) is not 0. got=%d", len(fun.Arguments))
 	}
 	if len(fun.Body) != 0 {
+		t.Fatalf("len(fun.Body) is not 0. got=%d", len(fun.Body))
+	}
+}
+
+func TestFunctionLiteralWithCalling2(t *testing.T) {
+	input := "(a){a}(12)"
+
+	expr := checkCommonTestsAndParseExpression(t, input)
+
+	call, ok := expr.(*ast.FunctionCalling)
+	if !ok {
+		t.Fatalf("expr is not *ast.FunctionCalling. got=%T", expr)
+	}
+	fun, ok := call.Function.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("call.Function is not *ast.FunctionLiteral. got=%T", call.Function)
+	}
+	if len(fun.Arguments) != 1 {
+		t.Fatalf("len(fun.Arguments) is not 0. got=%d", len(fun.Arguments))
+	}
+	if len(fun.Body) != 1 {
 		t.Fatalf("len(fun.Body) is not 0. got=%d", len(fun.Body))
 	}
 }

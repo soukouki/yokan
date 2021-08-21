@@ -92,9 +92,9 @@ func TestFunction(t *testing.T) {
 		{"val=56\n f3=(){val=78}\n f3()\n val", 56},
 		{"(){90}()", 90},
 		{"val=12\n (){val=34}\n val", 12},
-		{"f4=(a){a}\n f4(90)", 900},
+		{"f4=(a){a}\n f4(90)", 90},
 		{"f5=(a,b){a+b}\n f5(1,2)", 3},
-		{"f6=(a){(b){a+b}}\n f6(4)(5)", 9},
+		{"f6=(aa){(bb){aa+bb}}\n f6(40)(50)", 90},
 		{"f6=(a){(b){a+b}}\n f7=f6(6)\n f7(7)", 13},
 		{"val=12\n f8=(){val}\n val=34\n f8()", 34},
 		{"val=12\n f9=(val){}\n f9(34)\n val", 12},
@@ -203,7 +203,7 @@ func TestAssign(t *testing.T) {
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
-		t.Errorf("obj is not *object.Integer. got=%T(%s) (want=%d)", obj, obj.Inspect(), expected)
+		t.Errorf("obj is not *object.Integer. got=%T(%s) (want=%d)", obj, obj.String(), expected)
 		return false
 	}
 	if result.Value != expected {
@@ -216,7 +216,7 @@ func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 	result, ok := obj.(*object.Boolean)
 	if !ok {
-		t.Errorf("obj is not object.Boolean. got=%T(%s)", obj, obj.Inspect())
+		t.Errorf("obj is not object.Boolean. got=%T(%s)", obj, obj.String())
 		return false
 	}
 	if result.Value != expected {

@@ -82,7 +82,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	function, ok := fn.(*object.Function)
 	if !ok {
 		return &object.OtherError {
-			Msg: fmt.Sprintf("%s(%s) is not a function", fn.Type(), fn.Inspect()),
+			Msg: fmt.Sprintf("%s(%s) is not a function", fn.Type(), fn.String()),
 		}
 	}
 	if len(function.Parameters) != len(args) {
@@ -91,7 +91,8 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		}
 	}
 	inheritEnv := inheritFunctionEnv(function, args)
-	return evalStatements(function.Body, inheritEnv)
+	a := evalStatements(function.Body, inheritEnv)
+	return a
 }
 
 func inheritFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
